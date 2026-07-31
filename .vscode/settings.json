@@ -1,0 +1,9 @@
+{
+  "//": "C: drive is full on this machine — send temp files + the npm cache to E: so `npm install` and `npm run dev` don't fail. Remove this once C: has free space.",
+  "terminal.integrated.env.windows": {
+    "TMP": "E:\\_devcache\\tmp",
+    "TEMP": "E:\\_devcache\\tmp",
+    "npm_config_cache": "E:\\_devcache\\npm"
+  },
+  "typescript.tsdk": "node_modules/typescript/lib"
+}

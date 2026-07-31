@@ -1,0 +1,416 @@
+// MarketMind AI — Prisma schema
+// SQLite (free) database. Arrays stored as JSON-serialized Strings (SQLite limitation).
+//
+// Multi-tenancy: every content model carries a nullable `userId` (the owning
+// tenant). Isolation is enforced centrally by a Prisma client extension in
+// src/lib/db.ts, which injects `where: { userId }` / sets `userId` on writes.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ---------- Website Analysis ----------
+model Analysis {
+  id            String   @id @default(cuid())
+  userId        String?
+  url           String
+  sourceType    String   @default("website") // website | facebook | instagram
+  title         String?
+  industry      String?
+  description   String?
+  // JSON: { scores: {...}, strengths: [], weaknesses: [], opportunities: [], competitors: [] }
+  scores        String?
+  // JSON: structured metadata extracted from page
+  meta          String?
+  // Full markdown report from the analyst agent
+  report        String
+  // Short executive summary
+  summary       String
+  // JSON: suggested next actions
+  recommendations String?
+  wordCount     Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([userId])
+  @@index([url])
+}
+
+// ---------- Email Campaigns ----------
+model Campaign {
+  id            String   @id @default(cuid())
+  userId        String?
+  name          String
+  productName   String
+  productDesc   String?
+  targetAudience String
+  valueProp     String?
+  goal          String   @default("leads") // leads | conversions | traffic | awareness
+  tone          String   @default("professional") // professional | friendly | urgent | luxury | casual
+  seoKeywords   String?  // JSON array of SEO keywords to weave in
+  status        String   @default("draft") // draft | generating | ready | sent
+  draftCount    Int      @default(2) // 1-3 draft emails to generate
+  // Product picture (optional) — stored as base64 data URL + AI-generated description
+  productImage  String?
+  productImageDesc String?
+  // The variant the user selected as the winner (set when user picks the best email)
+  selectedVariantId String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  recipients    Recipient[]
+  variants      EmailVariant[]
+
+  @@index([userId])
+  @@index([status])
+}
+
+model Recipient {
+  id         String   @id @default(cuid())
+  userId     String?
+  campaignId String
+  email      String
+  name       String?
+  company    String?
+  notes      String?
+  status     String   @default("pending") // pending | sent | opened | clicked | failed
+  leadScore  Int?     // 0-100, nullable until scored
+  leadTier   String?  // hot | warm | cold
+  leadFit    String?  // 1-line fit reason
+  // Personalized sent content (populated when the selected email is "sent")
+  sentSubject String?
+  sentBody    String?
+  sentAt      DateTime?
+  createdAt   DateTime @default(now())
+
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([campaignId])
+  @@index([email])
+  @@index([leadTier])
+}
+
+// ---------- Social Media ----------
+model SocialCampaign {
+  id            String   @id @default(cuid())
+  userId        String?
+  brand         String
+  product       String
+  audience      String
+  url           String?
+  goal          String   @default("engagement")
+  platforms     String   // JSON array
+  contentPillars String? // JSON array
+  hashtagBank   String?  // JSON array
+  strategy      String?
+  cadence       String?  // JSON array
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  posts         SocialPost[]
+
+  @@index([userId])
+  @@index([brand])
+}
+
+model SocialPost {
+  id          String   @id @default(cuid())
+  userId      String?
+  campaignId  String
+  platform    String
+  hook        String
+  caption     String
+  hashtags    String?  // JSON array
+  cta         String?
+  imagePrompt String?
+  bestTime    String?
+  estReach    String?
+  createdAt   DateTime @default(now())
+
+  campaign    SocialCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([campaignId])
+  @@index([platform])
+}
+
+model EmailVariant {
+  id         String   @id @default(cuid())
+  userId     String?
+  campaignId String
+  variant    String   // "A" | "B"
+  subject    String
+  preheader  String?
+  body       String
+  cta        String?
+  strategy   String?  // which angle this variant uses
+  createdAt  DateTime @default(now())
+
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([campaignId])
+}
+
+// ---------- SEO ----------
+model SeoReport {
+  id              String   @id @default(cuid())
+  userId          String?
+  url             String
+  domain          String?
+  overallScore    Int      @default(0)
+  // JSON: { onpage: n, technical: n, content: n, performance: n }
+  scoreBreakdown  String?
+  // JSON: [{ type, severity, title, detail, fix }]
+  issues          String?
+  // JSON: [{ keyword, intent, volume, difficulty, opportunity }]
+  keywords        String?
+  // JSON: { titleTag, metaDescription, headings, images, links }
+  onPageAudit     String?
+  // markdown recommendations
+  recommendations String
+  // markdown action plan (doing SEO based on condition)
+  actionPlan      String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([userId])
+  @@index([url])
+}
+
+// ---------- Copywriting ----------
+model CopyAsset {
+  id        String   @id @default(cuid())
+  userId    String?
+  type      String   // ad | landing | headline | cta | social | product
+  brand     String
+  product   String
+  audience  String
+  tone      String   @default("professional")
+  platform  String?  // google | meta | linkedin | x | general
+  angle     String?  // pain | outcome | authority
+  // JSON: [{ label, content }]
+  variants  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+// ---------- Content Writing & Strategy ----------
+model ContentProject {
+  id        String   @id @default(cuid())
+  userId    String?
+  type      String   // blog | strategy | calendar | pillar
+  topic     String
+  brand     String?
+  audience  String?
+  keywords  String?  // JSON array
+  outline   String?  // JSON array of section objects
+  content   String   // markdown
+  title     String?
+  metaDesc  String?
+  wordCount Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+// ---------- Brand Profiles / Settings ----------
+model BrandProfile {
+  id              String   @id @default(cuid())
+  userId          String?
+  name            String
+  website         String?
+  industry        String?
+  audience        String?
+  valueProp       String?
+  tone            String   @default("professional") // professional|friendly|urgent|luxury|casual|bold
+  voice           String?  // brand voice description
+  keywords        String?  // JSON array of target keywords
+  primaryColor    String?  // hex, for personalization
+  logoUrl         String?
+  isDefault       Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([userId])
+  @@index([isDefault])
+}
+
+// ---------- Content Repurposing ----------
+model RepurposeProject {
+  id           String   @id @default(cuid())
+  userId       String?
+  sourceType   String   // blog | analysis | topic | url
+  sourceTitle  String
+  sourceContent String  // the original content (markdown or text)
+  brand        String?
+  audience     String?
+  // JSON: { socialPosts: [], emailSequence: [], adCopies: [], summary: "" }
+  outputs      String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([userId])
+  @@index([sourceType])
+}
+
+// ---------- SMTP Configuration ----------
+model SmtpConfig {
+  id            String   @id @default(cuid())
+  userId        String?
+  name          String   @default("default")
+  // Email provider: "smtp" (Nodemailer, direct delivery) or "web3forms"
+  // (Web3Forms free tier — delivers via CC, 250/month free, no app password)
+  provider      String   @default("smtp")
+  // SMTP fields (used when provider = "smtp")
+  host          String?
+  port          Int      @default(587)
+  secure        Boolean  @default(false)
+  user          String?
+  pass          String?
+  // Web3Forms access key (used when provider = "web3forms") — public/safe to expose
+  web3formsKey  String?
+  // Shared
+  fromName      String   @default("MarketMind AI")
+  fromEmail     String   // the sending email address (also the Web3Forms reply-to)
+  isDefault     Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([userId])
+  @@index([isDefault])
+}
+
+// ---------- AI-SEO (GEO/AEO — get cited by AI search engines) ----------
+model AiSeoReport {
+  id              String   @id @default(cuid())
+  userId          String?
+  url             String
+  domain          String?
+  overallScore    Int      @default(0)
+  // JSON: { aiVisibility, contentExtractability, structuredData, citationReadiness }
+  scoreBreakdown  String?
+  // JSON: [{ platform, present, summary }] — ChatGPT/Perplexity/AI Overviews
+  aiVisibility    String?
+  // JSON: [{ issue, recommendation }]
+  recommendations String?
+  // markdown report
+  report          String
+  // JSON-LD / llms.txt suggestions
+  llmsTxt         String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([userId])
+  @@index([url])
+}
+
+// ---------- Competitor Profiling ----------
+model CompetitorProfile {
+  id          String   @id @default(cuid())
+  userId      String?
+  url         String
+  name        String?
+  domain      String?
+  description String?
+  // JSON: { pricing, positioning, targetAudience, strengths, weaknesses, techStack }
+  profile     String
+  // markdown full report
+  report      String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+  @@index([url])
+}
+
+// ---------- CRO (Conversion Rate Optimization) ----------
+model CroReport {
+  id              String   @id @default(cuid())
+  userId          String?
+  url             String
+  pageType        String?
+  overallScore    Int      @default(0)
+  // JSON: { valueProp, clarity, ctas, trust, friction, mobile }
+  scoreBreakdown  String?
+  // JSON: [{ priority, issue, recommendation, impact }]
+  issues          String?
+  // markdown report
+  report          String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([userId])
+  @@index([url])
+}
+
+// ---------- Schema Markup ----------
+model SchemaReport {
+  id            String   @id @default(cuid())
+  userId        String?
+  url           String
+  pageType      String?
+  // JSON-LD markup to add
+  jsonLd        String
+  // JSON: [{ type, status, detail }] — existing schema audit
+  existingAudit String?
+  // markdown recommendations
+  report        String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([userId])
+  @@index([url])
+}
+
+// ---------- Authentication ----------
+model User {
+  id              String   @id @default(cuid())
+  email           String   @unique
+  name            String?
+  passwordHash    String
+  role            String   @default("admin") // admin | user
+  // Stripe / subscription
+  stripeCustomerId   String?
+  stripeSubId        String?
+  subscriptionTier   String   @default("free") // free | starter | pro | agency
+  subStatus          String   @default("active") // active | canceled | past_due | trialing
+  // Usage counters (reset monthly)
+  analysesUsed       Int      @default(0)
+  campaignsUsed      Int      @default(0)
+  emailsSent         Int      @default(0)
+  aiCallsUsed        Int      @default(0)
+  usageResetAt       DateTime @default(now())
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@index([email])
+  @@index([subscriptionTier])
+}
+
+// ---------- Scheduled Email Jobs ----------
+model ScheduledJob {
+  id          String    @id @default(cuid())
+  userId      String?
+  campaignId  String
+  scheduledFor DateTime
+  status      String    @default("pending") // pending | running | completed | failed | canceled
+  startedAt   DateTime?
+  completedAt DateTime?
+  result      String?   // JSON: { sent, failed, errors }
+  createdAt   DateTime  @default(now())
+
+  @@index([userId])
+  @@index([status])
+  @@index([scheduledFor])
+}

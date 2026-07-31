@@ -1,0 +1,61 @@
+# Dependencies
+node_modules
+/.pnp
+.pnp.*
+
+# Next.js
+/.next/
+/out/
+next-env.d.ts
+
+# Production
+/build
+
+# Misc
+.DS_Store
+*.pem
+
+# Debug
+npm-debug.log*
+yarn-debug.log*
+*.log
+dev.log
+server.log
+
+# Environment (never commit real secrets; the example IS safe to commit)
+.env*
+!.env.example
+
+# Vercel
+.vercel
+
+# TypeScript
+*.tsbuildinfo
+
+# Local configs
+local-*
+.claude
+.z-ai-config
+
+# Database (regenerate with prisma db push)
+db/*.db
+db/*.db-journal
+# Data backup/export — contains secrets (password hashes, SMTP creds). Never commit.
+db/backup.json
+
+# Upload directory (user uploads, not part of repo)
+/upload/
+
+# Skills/examples (reference only, not part of the app)
+/skills/
+/examples/
+/mini-services/
+/download/
+
+# Old sandbox artifacts (z.ai/Caddy) — not used by the Vercel/npm setup
+/.zscripts/
+Caddyfile
+bun.lock
+project_log.md
+/tool-results/
+.claudeignore
