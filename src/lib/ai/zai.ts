@@ -41,24 +41,52 @@ async function chatCompletion(
   opts: { model?: string; temperature?: number } = {}
 ): Promise<any> {
   requireKey();
-  const res = await fetch(`${BASE_URL}/chat/completions`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${API_KEY}`,
-    },
-    body: JSON.stringify({
-      model: opts.model || MODEL,
-      messages,
-      temperature: opts.temperature ?? 0.7,
-      max_tokens: MAX_TOKENS,
-    }),
+  const body = JSON.stringify({
+    model: opts.model || MODEL,
+    messages,
+    temperature: opts.temperature ?? 0.7,
+    max_tokens: MAX_TOKENS,
   });
-  if (!res.ok) {
-    const detail = await res.text().catch(() => "");
-    throw new Error(`LLM request failed (${res.status}): ${detail.slice(0, 400)}`);
+
+  // Free LLM tiers (e.g. Groq) rate-limit by requests/tokens-per-minute. When
+  // several AI features run close together, the provider returns 429. Rather
+  // than surfacing a hard 500, retry with backoff — honoring the provider's
+  // `retry-after` header (or the "try again in Xs" hint in the body) so the
+  // call transparently recovers once the per-minute window resets.
+  const MAX_ATTEMPTS = 4;
+  let lastStatus = 0;
+  let lastDetail = "";
+  for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+    const res = await fetch(`${BASE_URL}/chat/completions`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${API_KEY}`,
+      },
+      body,
+    });
+    if (res.ok) return res.json();
+
+    lastStatus = res.status;
+    lastDetail = await res.text().catch(() => "");
+    const retriable = res.status === 429 || res.status === 500 || res.status === 502 || res.status === 503;
+    if (!retriable || attempt === MAX_ATTEMPTS - 1) break;
+
+    // How long to wait: Retry-After header (seconds) → body "try again in Xs" → exponential backoff.
+    const retryAfter = parseFloat(res.headers.get("retry-after") || "");
+    let waitMs: number;
+    if (Number.isFinite(retryAfter)) {
+      waitMs = retryAfter * 1000;
+    } else {
+      const m = lastDetail.match(/try again in ([\d.]+)\s*s/i);
+      waitMs = m ? Math.ceil(parseFloat(m[1]) * 1000) + 250 : 800 * Math.pow(2, attempt);
+    }
+    waitMs = Math.min(Math.max(waitMs, 500), 15000); // clamp so a route never hangs
+    await new Promise((r) => setTimeout(r, waitMs));
   }
-  return res.json();
+
+  const hint = lastStatus === 429 ? " — the AI provider's rate limit was hit; wait a moment and try again, or upgrade your LLM plan." : "";
+  throw new Error(`LLM request failed (${lastStatus})${hint}: ${lastDetail.slice(0, 300)}`);
 }
 
 /**
