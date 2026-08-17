@@ -1,5 +1,6 @@
 {
   "framework": "nextjs",
+  "buildCommand": "node scripts/vercel-build.mjs",
   "installCommand": "npm install",
   "functions": {
     "src/app/api/analyze/route.ts":         { "maxDuration": 60 },
