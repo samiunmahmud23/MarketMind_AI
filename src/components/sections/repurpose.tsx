@@ -52,7 +52,7 @@ function PlatformIcon({ platform }: { platform: string }) {
   return <Repeat2 className="h-3.5 w-3.5" />;
 }
 
-export function RepurposeSection() {
+export function RepurposeSection({ itemId }: { itemId?: string | null }) {
   const [view, setView] = React.useState<"list" | "new" | "detail">("list");
   const [history, setHistory] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(true);
@@ -71,6 +71,13 @@ export function RepurposeSection() {
   }, []);
 
   React.useEffect(() => { load(); }, [load]);
+
+  // Auto-open specific item when navigated from global search
+  React.useEffect(() => {
+    if (itemId && !loading) {
+      openDetail(itemId);
+    }
+  }, [itemId, loading]);
 
   function openDetail(id: string) {
     setSelectedId(id);
@@ -135,7 +142,7 @@ export function RepurposeSection() {
             <EmptyState
               icon={<Repeat2 className="h-10 w-10" />}
               title="No repurpose projects yet"
-              description="Paste a blog post, article, or your notes. The ContentRepurposer agent will spin it into platform-native social posts, a 3-email sequence, and 3 ad-copy angles."
+              description="Paste a blog post, article, or your notes. The system will spin it into platform-native social posts, a 3-email sequence, and 3 ad-copy angles."
               action={<Button onClick={() => setView("new")}><Sparkles className="h-4 w-4 mr-1.5" /> Repurpose Content</Button>}
             />
           ) : (
@@ -257,7 +264,7 @@ function NewRepurposeForm({ onBack, onCreated }: { onBack: () => void; onCreated
             <div className="text-[11px] text-muted-foreground mt-1">{form.sourceContent.length} characters {form.sourceContent.length > 8000 && "(will be truncated to 8000 for processing)"}</div>
           </Field>
           <div className="grid sm:grid-cols-2 gap-4">
-            <Field label="Brand (optional)"><Input value={form.brand} onChange={(e) => setForm({ ...form, brand: e.target.value })} placeholder="MarketMind AI" /></Field>
+            <Field label="Brand (optional)"><Input value={form.brand} onChange={(e) => setForm({ ...form, brand: e.target.value })} placeholder="Example Brand" /></Field>
             <Field label="Audience (optional)"><Input value={form.audience} onChange={(e) => setForm({ ...form, audience: e.target.value })} placeholder="SaaS founders" /></Field>
           </div>
           <Button onClick={submit} disabled={busy} className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600">
@@ -269,7 +276,7 @@ function NewRepurposeForm({ onBack, onCreated }: { onBack: () => void; onCreated
       {busy && (
         <Card>
           <CardContent className="p-5">
-            <div className="flex items-center gap-2 mb-3"><Loader2 className="h-4 w-4 animate-spin text-cyan-500" /><span className="text-sm font-medium">ContentRepurposer agent is working…</span></div>
+            <div className="flex items-center gap-2 mb-3"><Loader2 className="h-4 w-4 animate-spin text-cyan-500" /><span className="text-sm font-medium">Repurposing content…</span></div>
             <div className="space-y-2.5">
               {STEPS.map((s, i) => (
                 <div key={s} className="flex items-center gap-2.5">

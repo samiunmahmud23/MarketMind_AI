@@ -106,7 +106,7 @@ function AuthTab() {
           <>
             <div className="grid sm:grid-cols-2 gap-4">
               <Field label="Admin name"><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Admin" /></Field>
-              <Field label="Admin email *"><Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="admin@marketmind.ai" /></Field>
+              <Field label="Admin email *"><Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="admin@example.com" /></Field>
             </div>
             <Field label="Password * (min 6 characters)"><Input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} placeholder="••••••••" /></Field>
             <Button onClick={setup} disabled={setting} className="btn-press mt-4 w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700">
@@ -134,7 +134,7 @@ function AuthTab() {
 const TIERS = [
   { id: "free", name: "Free", price: 0, icon: Zap, color: "text-muted-foreground bg-muted", limits: { analyses: 10, campaigns: 5, emails: "50/mo", aiCalls: "100/mo" }, features: ["Website Analysis", "SEO Reports", "Copywriting", "Content Studio"] },
   { id: "starter", name: "Starter", price: 19, icon: Check, color: "text-emerald-600 bg-emerald-500/10", limits: { analyses: 50, campaigns: 25, emails: "500/mo", aiCalls: "500/mo" }, features: ["Everything in Free", "Real email sending", "Social Studio", "Lead Scoring", "Campaign Analytics"] },
-  { id: "pro", name: "Pro", price: 49, icon: Crown, color: "text-violet-600 bg-violet-500/10", limits: { analyses: 200, campaigns: 100, emails: "5K/mo", aiCalls: "2K/mo" }, features: ["Everything in Starter", "Content Repurposing", "LangGraph + RAG", "Scheduled emails", "Priority support"] },
+  { id: "pro", name: "Pro", price: 49, icon: Crown, color: "text-violet-600 bg-violet-500/10", limits: { analyses: 200, campaigns: 100, emails: "5K/mo", aiCalls: "2K/mo" }, features: ["Everything in Starter", "Content Repurposing", "Scheduled emails", "Priority support"] },
   { id: "agency", name: "Agency", price: 149, icon: Crown, color: "text-amber-600 bg-amber-500/10", limits: { analyses: "∞", campaigns: "∞", emails: "50K/mo", aiCalls: "∞" }, features: ["Everything in Pro", "Unlimited everything", "White-label", "Multi-brand", "API access"] },
 ];
 
@@ -156,25 +156,24 @@ function BillingTab() {
   async function subscribe(tierId: string) {
     setSubscribing(tierId);
     try {
-      // Paid tiers → try real Stripe Checkout first (redirects to Stripe's page).
-      if (tierId !== "free") {
-        try {
-          const res = await apiFetch<any>("/api/billing/checkout", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ tier: tierId }),
-            retries: 1,
-          });
-          if (res?.url) {
-            window.location.assign(res.url);
-            return;
-          }
-        } catch (e: any) {
-          // Stripe not configured → fall through to the demo flow; otherwise surface it.
-          if (!/not configured/i.test(e?.message || "")) throw e;
+      // Try Stripe Checkout first for all tiers. Free tier can still be managed
+      // via Stripe as a zero-dollar subscription when configured.
+      try {
+        const res = await apiFetch<any>("/api/billing/checkout", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ tier: tierId }),
+          retries: 1,
+        });
+        if (res?.url) {
+          window.location.assign(res.url);
+          return;
         }
+      } catch (e: any) {
+        // Stripe not configured → fall through to the demo flow; otherwise surface it.
+        if (!/not configured/i.test(e?.message || "")) throw e;
       }
-      // Free tier, or Stripe not configured → demo tier update (no payment).
+      // Stripe not configured or checkout unavailable → demo tier update.
       const data = await apiFetch<any>("/api/billing/subscribe", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ tier: tierId }) });
       toast.success(data.message);
       setCurrentTier(tierId);

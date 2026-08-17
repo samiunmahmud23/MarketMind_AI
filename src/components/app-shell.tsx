@@ -16,7 +16,6 @@ import {
   Menu,
   X,
   Zap,
-  Network,
   ShieldCheck,
   LogOut,
   Moon,
@@ -28,6 +27,8 @@ import { ServerStatusBanner } from "@/components/server-status";
 import { GlobalSearch } from "@/components/global-search";
 import { BrandLogo, BrandLogoWithText } from "@/components/brand-logo";
 
+import { Image as ImageIcon } from "lucide-react"; // Import ImageIcon for the nav
+
 export type SectionId =
   | "dashboard"
   | "analysis"
@@ -36,9 +37,9 @@ export type SectionId =
   | "copywriting"
   | "content"
   | "social"
+  | "product-studio"
   | "repurpose"
   | "marketing-skills"
-  | "langchain"
   | "account"
   | "settings";
 
@@ -55,9 +56,9 @@ const NAV: {
   { id: "copywriting", label: "Copywriting", icon: PenTool, desc: "Ads, landing, CTAs" },
   { id: "content", label: "Content Studio", icon: FileText, desc: "Blogs & strategy" },
   { id: "social", label: "Social Studio", icon: Share2, desc: "FB · IG · LinkedIn · X" },
+  { id: "product-studio", label: "Product Studio", icon: ImageIcon, desc: "AI Graphic Design" },
   { id: "repurpose", label: "Repurpose", icon: Repeat2, desc: "One source → multi-channel" },
-  { id: "marketing-skills", label: "Marketing Skills", icon: Zap, desc: "AI-SEO · Competitors · CRO · Schema" },
-  { id: "langchain", label: "LangGraph + RAG", icon: Network, desc: "Multi-agent orchestration + knowledge base" },
+  { id: "marketing-skills", label: "Marketing Skills", icon: Zap, desc: "SEO · Competitors · CRO · Schema" },
   { id: "account", label: "Account & Billing", icon: ShieldCheck, desc: "Auth · Plans · Scheduled sends" },
   { id: "settings", label: "Settings", icon: Settings, desc: "Brand profiles & config" },
 ];
@@ -91,6 +92,17 @@ function useAgentStatus(): AgentState {
     };
   }, []);
   return status;
+}
+
+/** Global poller for scheduled email jobs */
+function useScheduledJobsPoller() {
+  React.useEffect(() => {
+    const interval = setInterval(async () => {
+      try { await checkServerHealth(); /* just to check alive */ await fetch("/api/scheduled-jobs/process", { method: "POST" }); }
+      catch { /* non-fatal */ }
+    }, 60000);
+    return () => clearInterval(interval);
+  }, []);
 }
 
 const STATUS_META: Record<AgentState, { color: string; pill: string; headline: string }> = {
@@ -151,7 +163,7 @@ function AgentStatusPanel() {
         {m.headline}
       </div>
       <p className="mt-1.5 text-[11px] leading-relaxed text-sidebar-foreground/50">
-        12 autonomous agents · Groq-powered, no n8n.
+        12 autonomous workflows, all in-house.
       </p>
     </div>
   );
@@ -388,16 +400,19 @@ export function AppShell({
   onLogout,
 }: {
   active: SectionId;
-  onNavigate: (id: SectionId) => void;
+  onNavigate: (id: SectionId, itemId?: string) => void;
   children: React.ReactNode;
   onLogout?: () => void;
 }) {
   const current = NAV.find((n) => n.id === active)!;
   const [searchOpen, setSearchOpen] = React.useState(false);
   const [mobileNavOpen, setMobileNavOpen] = React.useState(false);
+  
+  // Start the background poller to process any due scheduled email jobs
+  useScheduledJobsPoller();
 
   const handleSearchNavigate = React.useCallback(
-    (section: SectionId) => onNavigate(section),
+    (section: SectionId, itemId?: string) => onNavigate(section, itemId),
     [onNavigate]
   );
 
@@ -529,9 +544,9 @@ export function AppShell({
             <div className="flex items-center justify-between text-[11px] text-muted-foreground">
               <div className="flex items-center gap-1.5">
                 <BrandLogo size="sm" className="h-4 opacity-60" />
-                <span>· Autonomous marketing agency</span>
+                <span>· Autonomous marketing platform</span>
               </div>
-              <span className="hidden font-mono sm:inline">SQLite · Next.js 16 · Groq</span>
+              <span className="hidden font-mono sm:inline">SQLite · Prisma · Modern workflow tooling</span>
             </div>
           </footer>
         </div>

@@ -29,13 +29,13 @@ export interface WebsiteAnalysisResult {
 
 const SYSTEM = `You are MarketMind's WebsiteAnalyst agent — a senior growth strategist and brand analyst with 15+ years experience auditing websites for SaaS, e-commerce, and service businesses.
 
-You think like a LangGraph node: receive raw page content, then produce a rigorous, evidence-based analysis. You are concrete, specific, and never generic. Every claim must trace back to something actually present (or missing) on the page.
+You receive raw page content and produce a rigorous, evidence-based analysis. You are concrete, specific, and never generic. Every claim must trace back to something actually present (or missing) on the page.
 
 You always respond with valid JSON when asked, and rich Markdown when asked for prose.`;
 
 /**
  * WebsiteAnalyst agent.
- * Pipeline (LangGraph-style nodes):
+ * Pipeline:
  *   1. fetch   — read the page via page_reader
  *   2. extract — pull plain text + brand signals
  *   3. research — web_search competitor / industry context

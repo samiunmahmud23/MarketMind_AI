@@ -41,7 +41,7 @@ const TYPE_META: Record<string, { label: string; icon: any; color: string }> = {
   product: { label: "Product Desc", icon: Package, color: "text-teal-600 bg-teal-500/10" },
 };
 
-export function CopywritingSection() {
+export function CopywritingSection({ itemId }: { itemId?: string | null }) {
   const [form, setForm] = React.useState({
     type: "ad",
     brand: "",
@@ -70,6 +70,14 @@ export function CopywritingSection() {
   }, []);
 
   React.useEffect(() => { loadHistory(); }, [loadHistory]);
+
+  // Auto-open specific item when navigated from global search
+  React.useEffect(() => {
+    if (itemId) {
+      viewHistory(itemId);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [itemId]);
 
   React.useEffect(() => {
     if (!busy) return;
@@ -145,8 +153,8 @@ export function CopywritingSection() {
                 })}
               </div>
             </div>
-            <Field label="Brand *"><Input value={form.brand} onChange={(e) => setForm({ ...form, brand: e.target.value })} placeholder="MarketMind AI" /></Field>
-            <Field label="Product / offer *"><Input value={form.product} onChange={(e) => setForm({ ...form, product: e.target.value })} placeholder="AI marketing agency subscription" /></Field>
+            <Field label="Brand *"><Input value={form.brand} onChange={(e) => setForm({ ...form, brand: e.target.value })} placeholder="Example Brand" /></Field>
+            <Field label="Product / offer *"><Input value={form.product} onChange={(e) => setForm({ ...form, product: e.target.value })} placeholder="Marketing service subscription" /></Field>
             <Field label="Target audience *"><Input value={form.audience} onChange={(e) => setForm({ ...form, audience: e.target.value })} placeholder="SaaS founders, marketing managers" /></Field>
             <div className="grid grid-cols-2 gap-3">
               <Field label="Tone">
@@ -197,7 +205,7 @@ export function CopywritingSection() {
           {busy && (
             <Card>
               <CardContent className="p-5">
-                <div className="flex items-center gap-2 mb-3"><Loader2 className="h-4 w-4 animate-spin text-rose-500" /><span className="text-sm font-medium">Copywriter agent is writing…</span></div>
+                <div className="flex items-center gap-2 mb-3"><Loader2 className="h-4 w-4 animate-spin text-rose-500" /><span className="text-sm font-medium">Copywriting is in progress…</span></div>
                 <div className="space-y-2.5">
                   {STEPS.map((s, i) => (
                     <div key={s} className="flex items-center gap-2.5">

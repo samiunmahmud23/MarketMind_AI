@@ -3,13 +3,13 @@
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Project
-MarketMind AI — an AI marketing-agency SaaS. A single-page dashboard where AI agents analyze a website/product and generate cold-email campaigns, SEO / AI-SEO reports, copywriting, content, social posts, and CRO/schema reports.
+A marketing operations SaaS. A single-page dashboard where specialized workflows analyze a website/product and generate cold-email campaigns, SEO reports, copywriting, content, social posts, and CRO/schema reports.
 
 ## Tech stack
 - **Next.js 16** (App Router, Turbopack) + **React 19** + **TypeScript 5**
 - **Tailwind CSS 4** + shadcn/ui (New York) + Framer Motion + Lucide
 - **Prisma 6 + SQLite** (`db/custom.db`) — arrays stored as JSON strings
-- **LLM** via any OpenAI-compatible API (env-configured — `LLM_BASE_URL`/`LLM_MODEL`/`LLM_API_KEY`; default Groq); `@langchain/langgraph` for the RAG pipeline
+- **LLM** via any OpenAI-compatible API (env-configured — `LLM_BASE_URL`/`LLM_MODEL`/`LLM_API_KEY`; default Groq)
 - **NextAuth** (credentials + bcrypt); email via Nodemailer (SMTP) or Web3Forms
 
 ## Commands
@@ -28,7 +28,7 @@ No test suite is configured. Dev server is **port 3000 only**.
 - **Single route** (`src/app/page.tsx`): shows a landing page, then renders `AppShell` + one section per `SectionId` via `useState` (no router). Feature UIs are in `src/components/sections/*`.
 - **API layer** (`src/app/api/**`): one folder per feature; handlers persist via Prisma and invoke AI agents. AI routes set `export const runtime = "nodejs"` and a long `maxDuration`.
 - **AI agents** (`src/lib/ai/*`): a class per capability (`WebsiteAnalyst`, `EmailCopywriter`, `SeoStrategist`, …) exposing a `run()` pipeline. All model calls go through `src/lib/ai/zai.ts` (`llm`, `describeImage`, `readPage`, `webSearch`, `extractJson`).
-- **LangGraph** (`src/lib/langchain/graph.ts`): real `StateGraph` with typed state + RAG, exposed at `/api/langgraph` and `/api/rag`.
+- **Agent orchestration** is handled directly in the feature routes and specialized agent classes; no LangGraph/RAG workflow is shipped in this build.
 - **Data** (`prisma/schema.prisma`): SQLite has no array columns — every list/object field is a JSON string. `JSON.stringify` on write, `JSON.parse` on read.
 - **Auth** (`src/lib/auth.ts`): demo mode when zero users exist; enforced once a user is created. Tiers/limits in `SUBSCRIPTION_TIERS`.
 - **Client fetch**: always use `apiFetch` (`src/lib/api-fetch.ts`) — handles retries + HTML "server down" responses. Guard routes with `rateLimit(req, type)` (`src/lib/rate-limit.ts`).

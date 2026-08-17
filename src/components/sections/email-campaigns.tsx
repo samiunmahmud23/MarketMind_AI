@@ -177,7 +177,7 @@ function Segmented({
   );
 }
 
-export function EmailCampaignsSection() {
+export function EmailCampaignsSection({ itemId }: { itemId?: string | null }) {
   const [view, setView] = React.useState<"list" | "new" | "detail">("list");
   const [campaigns, setCampaigns] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(true);
@@ -202,6 +202,13 @@ export function EmailCampaignsSection() {
   React.useEffect(() => {
     load();
   }, [load]);
+
+  // Auto-open detail view if itemId is provided via deep-link
+  React.useEffect(() => {
+    if (itemId && !loading && campaigns.length > 0) {
+      openDetail(itemId);
+    }
+  }, [itemId, loading, campaigns.length]);
 
   function openDetail(id: string) {
     setSelectedId(id);
@@ -235,7 +242,7 @@ export function EmailCampaignsSection() {
                 className="inline-flex items-center gap-1.5 rounded-full border border-border px-2.5 py-1 text-[11px] font-medium"
                 style={{ background: "color-mix(in oklch, var(--brand-indigo) 10%, transparent)", color: "var(--brand-indigo)" }}
               >
-                <Sparkles className="h-3 w-3" /> EmailCopywriter agent
+                <Sparkles className="h-3 w-3" /> Email Draft Generator
               </div>
               <h2 className="text-2xl font-semibold tracking-tight">Cold Email Campaigns</h2>
               <p className="text-sm text-muted-foreground">Upload a CSV, generate SEO-based A/B emails, score leads, and send — personalized by name.</p>
@@ -266,7 +273,7 @@ export function EmailCampaignsSection() {
             <EmptyState
               icon={<Mail className="h-10 w-10" />}
               title="No campaigns yet"
-              description="Create your first cold email campaign. Upload a CSV of leads and let the EmailCopywriter agent generate A/B variants."
+              description="Create your first cold email campaign. Upload a CSV of leads and let the system generate A/B variants."
               action={
                 <button
                   onClick={() => setView("new")}
@@ -491,7 +498,7 @@ function NewCampaignForm({ onBack, onCreated }: { onBack: () => void; onCreated:
           </Field>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Product / service name *">
-              <Input value={form.productName} onChange={(e) => setForm({ ...form, productName: e.target.value })} placeholder="MarketMind AI" className="h-11 rounded-xl" />
+              <Input value={form.productName} onChange={(e) => setForm({ ...form, productName: e.target.value })} placeholder="Example Brand" className="h-11 rounded-xl" />
             </Field>
             <Field label="Target audience *">
               <Input value={form.targetAudience} onChange={(e) => setForm({ ...form, targetAudience: e.target.value })} placeholder="Early-stage SaaS founders" className="h-11 rounded-xl" />
@@ -645,6 +652,13 @@ function CampaignDetail({ id, onBack }: { id: string; onBack: () => void }) {
   const [sending, setSending] = React.useState(false);
   const [smtpStatus, setSmtpStatus] = React.useState<{ configured: boolean; provider?: string; fromEmail?: string; fromName?: string } | null>(null);
   const fileRef = React.useRef<HTMLInputElement>(null);
+  // Manual recipient entry state
+  const [recipientTab, setRecipientTab] = React.useState<"csv" | "manual">("csv");
+  const [manualEmail, setManualEmail] = React.useState("");
+  const [manualName, setManualName] = React.useState("");
+  const [manualCompany, setManualCompany] = React.useState("");
+  const [manualNotes, setManualNotes] = React.useState("");
+  const [addingRecipient, setAddingRecipient] = React.useState(false);
 
   const [refreshing, setRefreshing] = React.useState(false);
   const load = React.useCallback(async (opts?: { silent?: boolean }) => {
@@ -716,6 +730,37 @@ function CampaignDetail({ id, onBack }: { id: string; onBack: () => void }) {
       toast.error(e.message);
     } finally {
       setUploading(false);
+    }
+  }
+
+  async function addManualRecipient() {
+    if (!manualEmail.trim()) {
+      toast.error("Email address is required");
+      return;
+    }
+    setAddingRecipient(true);
+    try {
+      const data = await apiFetch<any>(`/api/campaigns/${id}/recipients`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: manualEmail.trim(),
+          name: manualName.trim() || null,
+          company: manualCompany.trim() || null,
+          notes: manualNotes.trim() || null,
+        }),
+      });
+      toast.success("Recipient added");
+      setManualEmail("");
+      setManualName("");
+      setManualCompany("");
+      setManualNotes("");
+      setRecipientTotal(data.total);
+      load({ silent: true });
+    } catch (e: any) {
+      toast.error(e.message);
+    } finally {
+      setAddingRecipient(false);
     }
   }
 
@@ -1029,7 +1074,7 @@ founder@startup.io,,Startup Inc,
         <Panel className="overflow-hidden p-5">
           <div className="mb-4 flex items-center gap-2">
             <Loader2 className="h-4 w-4 animate-spin" style={{ color: "var(--brand-indigo)" }} />
-            <span className="text-sm font-medium">EmailCopywriter agent is working…</span>
+            <span className="text-sm font-medium">Draft generation in progress…</span>
           </div>
           <div className="space-y-2.5">
             {GEN_STEPS.map((s, i) => {
@@ -1076,30 +1121,97 @@ founder@startup.io,,Startup Inc,
 
       {/* Workspace bento: CSV intake + recipients */}
       <div className="grid gap-5 lg:grid-cols-2">
-        {/* CSV upload */}
+        {/* Recipient intake (CSV or Manual) */}
         <Panel className="p-5">
-          <PanelTitle icon={Upload} accent="var(--brand-indigo)">Recipient List (CSV)</PanelTitle>
-          <div className="mt-4 space-y-3">
-            <div
-              role="button"
-              tabIndex={0}
-              aria-label="Upload a CSV of recipients — drop a file or activate to browse"
-              onDragOver={(e) => { e.preventDefault(); }}
-              onDrop={(e) => { e.preventDefault(); const f = e.dataTransfer.files?.[0]; if (f) uploadCsv(f); }}
-              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); fileRef.current?.click(); } }}
-              className="cursor-pointer rounded-xl border-2 border-dashed border-border p-6 text-center transition-colors hover:border-[color-mix(in_oklch,var(--brand-indigo)_50%,transparent)] hover:bg-muted/30"
-              onClick={() => fileRef.current?.click()}
-            >
-              <Upload className="mx-auto h-7 w-7 text-muted-foreground" />
-              <p className="mt-2 text-sm font-medium">Drop CSV here or click to browse</p>
-              <p className="mt-0.5 text-xs text-muted-foreground">Must include <span className="font-semibold text-foreground">email</span> + <span className="font-semibold text-foreground">name</span> columns (name used to personalize each email)</p>
-              <input ref={fileRef} type="file" accept=".csv,text/csv,text/plain" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadCsv(f); }} />
-            </div>
-            <div className="text-center text-xs text-muted-foreground">— or paste CSV text —</div>
-            <Textarea value={csvText} onChange={(e) => setCsvText(e.target.value)} placeholder="email,name,company&#10;john@example.com,John,Acme" rows={4} className="rounded-xl font-mono text-xs" />
-            <button onClick={() => uploadCsv()} disabled={uploading} className="btn-press flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-border text-sm font-medium transition-colors hover:bg-muted disabled:opacity-60">
-              {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />} Import recipients
-            </button>
+          <PanelTitle icon={Upload} accent="var(--brand-indigo)">Add Recipients</PanelTitle>
+          <div className="mt-4 space-y-4">
+            {/* Tab selector */}
+            <Segmented
+              value={recipientTab}
+              onChange={(v) => setRecipientTab(v as "csv" | "manual")}
+              options={[
+                { value: "csv", label: "CSV Upload" },
+                { value: "manual", label: "Manual Entry" },
+              ]}
+            />
+
+            {recipientTab === "csv" ? (
+              <div className="space-y-3">
+                <div
+                  role="button"
+                  tabIndex={0}
+                  aria-label="Upload a CSV of recipients — drop a file or activate to browse"
+                  onDragOver={(e) => { e.preventDefault(); }}
+                  onDrop={(e) => { e.preventDefault(); const f = e.dataTransfer.files?.[0]; if (f) uploadCsv(f); }}
+                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); fileRef.current?.click(); } }}
+                  className="cursor-pointer rounded-xl border-2 border-dashed border-border p-6 text-center transition-colors hover:border-[color-mix(in_oklch,var(--brand-indigo)_50%,transparent)] hover:bg-muted/30"
+                  onClick={() => fileRef.current?.click()}
+                >
+                  <Upload className="mx-auto h-7 w-7 text-muted-foreground" />
+                  <p className="mt-2 text-sm font-medium">Drop CSV here or click to browse</p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">Must include <span className="font-semibold text-foreground">email</span> + <span className="font-semibold text-foreground">name</span> columns (name used to personalize each email)</p>
+                  <input ref={fileRef} type="file" accept=".csv,text/csv,text/plain" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadCsv(f); }} />
+                </div>
+                <div className="text-center text-xs text-muted-foreground">— or paste CSV text —</div>
+                <Textarea value={csvText} onChange={(e) => setCsvText(e.target.value)} placeholder="email,name,company&#10;john@example.com,John,Acme" rows={4} className="rounded-xl font-mono text-xs" />
+                <button onClick={() => uploadCsv()} disabled={uploading} className="btn-press flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-border text-sm font-medium transition-colors hover:bg-muted disabled:opacity-60">
+                  {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />} Import recipients
+                </button>
+              </div>
+            ) : (
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  addManualRecipient();
+                }}
+                className="space-y-3"
+              >
+                <Field label="Email (required)">
+                  <Input
+                    type="email"
+                    value={manualEmail}
+                    onChange={(e) => setManualEmail(e.target.value)}
+                    placeholder="john@example.com"
+                    className="h-9 rounded-lg"
+                  />
+                </Field>
+                <Field label="Name">
+                  <Input
+                    type="text"
+                    value={manualName}
+                    onChange={(e) => setManualName(e.target.value)}
+                    placeholder="John Doe"
+                    className="h-9 rounded-lg"
+                  />
+                </Field>
+                <Field label="Company">
+                  <Input
+                    type="text"
+                    value={manualCompany}
+                    onChange={(e) => setManualCompany(e.target.value)}
+                    placeholder="Acme Inc."
+                    className="h-9 rounded-lg"
+                  />
+                </Field>
+                <Field label="Notes (optional)">
+                  <Textarea
+                    value={manualNotes}
+                    onChange={(e) => setManualNotes(e.target.value)}
+                    placeholder="Any additional notes..."
+                    rows={2}
+                    className="rounded-lg font-mono text-xs"
+                  />
+                </Field>
+                <button
+                  type="submit"
+                  disabled={addingRecipient}
+                  className="btn-press flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-border text-sm font-medium transition-colors hover:bg-muted disabled:opacity-60"
+                >
+                  {addingRecipient ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />} Add Recipient
+                </button>
+              </form>
+            )}
+
             <div className="flex items-center gap-3 pt-1 text-xs text-muted-foreground">
               <span className="inline-flex items-center gap-1"><Users className="h-3.5 w-3.5" /> <span className="font-semibold tabular-nums text-foreground">{recipientTotal}</span> recipients</span>
             </div>
@@ -1122,7 +1234,7 @@ founder@startup.io,,Startup Inc,
           </PanelTitle>
           <div className="mt-4">
             {recipients.length === 0 ? (
-              <p className="py-8 text-center text-sm text-muted-foreground">No recipients yet. Upload a CSV to get started.</p>
+              <p className="py-8 text-center text-sm text-muted-foreground">No recipients yet. Upload a CSV or add recipients manually.</p>
             ) : (
               <div className="scroll-thin -mx-1 max-h-72 space-y-1 overflow-y-auto">
                 {recipients.map((r) => (
@@ -1218,14 +1330,16 @@ founder@startup.io,,Startup Inc,
                           <span className="rounded-md border border-border px-2 py-0.5 text-xs">{v.cta}</span>
                         </div>
                       )}
-                      <button
+                      <motion.button
                         onClick={() => selectVariant(v.id)}
                         disabled={isSelected}
+                        whileHover={isSelected ? {} : { scale: 1.02 }}
+                        whileTap={isSelected ? {} : { scale: 0.98 }}
                         className="btn-press flex h-10 w-full items-center justify-center gap-2 rounded-xl text-sm font-semibold text-white transition-transform"
                         style={{ background: isSelected ? "var(--brand-mint)" : "linear-gradient(135deg, var(--brand-indigo), var(--brand-violet))" }}
                       >
                         {isSelected ? <><Check className="h-4 w-4" /> This is your selected email</> : <><Check className="h-4 w-4" /> Select this email</>}
-                      </button>
+                      </motion.button>
                     </div>
                   </Panel>
                 </motion.div>
@@ -1242,7 +1356,7 @@ founder@startup.io,,Startup Inc,
           <div className="mt-4 flex items-start gap-4">
             <img src={campaign.productImage} alt="Product" className="h-24 w-24 rounded-xl border border-border object-cover" />
             <div className="min-w-0 flex-1">
-              <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">AI vision analysis</div>
+              <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Vision analysis</div>
               {campaign.productImageDesc ? (
                 <p className="text-sm leading-relaxed text-muted-foreground">{campaign.productImageDesc}</p>
               ) : (
@@ -1292,10 +1406,10 @@ founder@startup.io,,Startup Inc,
             </div>
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <button disabled={sending} className="btn-press flex h-11 w-full items-center justify-center gap-2 rounded-xl text-sm font-semibold text-white disabled:opacity-60" style={{ background: "linear-gradient(135deg, var(--brand-mint), var(--brand-cyan))" }}>
+                <motion.button disabled={sending} whileHover={sending ? {} : { scale: 1.02 }} whileTap={sending ? {} : { scale: 0.98 }} className="btn-press flex h-11 w-full items-center justify-center gap-2 rounded-xl text-sm font-semibold text-white disabled:opacity-60" style={{ background: "linear-gradient(135deg, var(--brand-mint), var(--brand-cyan))" }}>
                   {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                   {sending ? "Sending real emails…" : `Send ${recipientTotal} personalized emails${smtpStatus?.provider === "web3forms" ? " via Web3Forms" : smtpConfigured ? " via SMTP" : ""}`}
-                </button>
+                </motion.button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>

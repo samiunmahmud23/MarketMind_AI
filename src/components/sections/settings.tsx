@@ -337,7 +337,7 @@ export function SettingsSection() {
         <CardContent className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 text-sm">
           {[
             { title: "Auto-applied", desc: "When you create a campaign or content project, the default profile's tone, audience and keywords pre-fill the form." },
-            { title: "Per-agent", desc: "Each agent (EmailCopywriter, ContentStrategist, etc.) reads the brand voice to keep messaging consistent." },
+            { title: "Per-workflow", desc: "Each workflow reads the brand voice to keep messaging consistent." },
             { title: "Multiple brands", desc: "Manage unlimited brand profiles for different clients — ideal for agencies. Star one as default." },
           ].map((c) => (
             <div key={c.title} className="rounded-lg border border-border p-3">
@@ -384,7 +384,7 @@ function SmtpCard() {
     user: "",
     pass: "",
     web3formsKey: "",
-    fromName: "MarketMind AI",
+    fromName: "Your Brand",
     fromEmail: "",
   });
 
@@ -403,7 +403,7 @@ function SmtpCard() {
           user: data.user || "",
           pass: "", // never pre-fill password
           web3formsKey: data.web3formsKey || "",
-          fromName: data.fromName || "MarketMind AI",
+            fromName: data.fromName || "Your Brand",
           fromEmail: data.fromEmail || "",
         });
       }
@@ -485,7 +485,7 @@ function SmtpCard() {
       // so we test it directly from the browser (client-side).
       if (form.provider === "web3forms") {
         const { testWeb3FormsClient } = await import("@/lib/web3forms-client");
-        const result = await testWeb3FormsClient(form.web3formsKey, form.fromEmail || "test@marketmind.ai");
+        const result = await testWeb3FormsClient(form.web3formsKey, form.fromEmail || "test@example.com");
         setTestResult(result);
         if (result.ok) toast.success(result.message);
         else toast.error(result.message);
@@ -513,7 +513,7 @@ function SmtpCard() {
       await apiFetch("/api/smtp-config", { method: "DELETE", json: false });
       toast.success("Email settings removed");
       setConfig(null);
-      setForm({ id: "", provider: "web3forms", host: "", port: "587", secure: false, user: "", pass: "", web3formsKey: "", fromName: "MarketMind AI", fromEmail: "" });
+      setForm({ id: "", provider: "web3forms", host: "", port: "587", secure: false, user: "", pass: "", web3formsKey: "", fromName: "Your Brand", fromEmail: "" });
     } catch (e: any) {
       toast.error(e.message);
     }
@@ -660,7 +660,7 @@ function SmtpCard() {
             {/* Shared fields */}
             <div className="grid sm:grid-cols-2 gap-4">
               <Field label="From name">
-                <Input value={form.fromName} onChange={(e) => setForm({ ...form, fromName: e.target.value })} placeholder="MarketMind AI" />
+                <Input value={form.fromName} onChange={(e) => setForm({ ...form, fromName: e.target.value })} placeholder="Your Brand" />
               </Field>
               <Field label="From email * (also your Web3Forms reply-to)">
                 <Input type="email" value={form.fromEmail} onChange={(e) => setForm({ ...form, fromEmail: e.target.value })} placeholder="you@gmail.com" />

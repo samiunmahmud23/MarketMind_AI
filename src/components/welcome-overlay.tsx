@@ -16,8 +16,8 @@ interface Step {
 
 const STEPS: Step[] = [
   { icon: Globe, title: "Analyze any website", desc: "Paste a URL and get a full marketing audit — scores, SWOT, recommendations.", color: "text-emerald-600 bg-emerald-500/10" },
-  { icon: Mail, title: "Cold email campaigns", desc: "Upload a CSV, generate 1-3 AI drafts, pick the best, send personalized emails.", color: "text-amber-600 bg-amber-500/10" },
-  { icon: Search, title: "SEO + AI-SEO reports", desc: "On-page audits, keyword research, GEO/AEO optimization for AI search engines.", color: "text-sky-600 bg-sky-500/10" },
+  { icon: Mail, title: "Cold email campaigns", desc: "Upload a CSV, generate 1-3 drafts, pick the best, send personalized emails.", color: "text-amber-600 bg-amber-500/10" },
+  { icon: Search, title: "SEO + GEO/AEO reports", desc: "On-page audits, keyword research, GEO/AEO optimization for search visibility.", color: "text-sky-600 bg-sky-500/10" },
   { icon: Share2, title: "Social + Content + Repurpose", desc: "Platform-native posts, blog articles, and cross-channel content from one source.", color: "text-pink-600 bg-pink-500/10" },
 ];
 
@@ -77,12 +77,12 @@ export function WelcomeOverlay({ onNavigate }: { onNavigate: (section: string) =
                   <div>
                   <BrandLogo size="md" className="mb-3" />
                   <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-[11px] font-medium text-primary mb-3">
-                    <Sparkles className="h-3 w-3" /> Welcome to MarketMind AI
+                    <Sparkles className="h-3 w-3" /> Welcome to your marketing workspace
                   </div>
                 </div>
-                  <h2 className="text-2xl font-bold tracking-tight">Your AI marketing agency, ready to go.</h2>
+                  <h2 className="text-2xl font-bold tracking-tight">Your marketing agency, ready to go.</h2>
                   <p className="mt-2 text-sm text-muted-foreground max-w-md">
-                    12 autonomous agents are ready to analyze, write, and send — all in-house, no n8n. Here's how to get started:
+                    12 autonomous workflows are ready to analyze, write, and send — all in-house. Here's how to get started:
                   </p>
                 </div>
                 <button onClick={dismiss} className="btn-press h-8 w-8 inline-flex items-center justify-center rounded-lg text-muted-foreground hover:bg-muted transition-colors" aria-label="Dismiss">

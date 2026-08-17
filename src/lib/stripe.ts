@@ -18,6 +18,7 @@ export const stripe: Stripe = stripeEnabled
  * Keep these aligned with SUBSCRIPTION_TIERS in src/lib/auth.ts.
  */
 export const PLANS: Record<string, { name: string; amount: number }> = {
+  free: { name: "Free", amount: 0 },
   starter: { name: "Starter", amount: 1900 },
   pro: { name: "Pro", amount: 4900 },
   agency: { name: "Agency", amount: 14900 },

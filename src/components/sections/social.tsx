@@ -49,7 +49,7 @@ function PlatformMeta(id: string) {
   return PLATFORMS.find((p) => p.id === id) || PLATFORMS[0];
 }
 
-export function SocialSection() {
+export function SocialSection({ itemId }: { itemId?: string | null }) {
   const [view, setView] = React.useState<"list" | "new" | "detail">("list");
   const [history, setHistory] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(true);
@@ -68,6 +68,13 @@ export function SocialSection() {
   }, []);
 
   React.useEffect(() => { load(); }, [load]);
+
+  // Auto-open specific item when navigated from global search
+  React.useEffect(() => {
+    if (itemId && !loading) {
+      openDetail(itemId);
+    }
+  }, [itemId, loading]);
 
   function openDetail(id: string) {
     setSelectedId(id);
@@ -104,13 +111,13 @@ export function SocialSection() {
             <EmptyState
               icon={<Share2 className="h-10 w-10" />}
               title="No social campaigns yet"
-              description="The SocialMediaAgent produces platform-native posts — different captions for FB, IG, LinkedIn and X — plus content pillars, a hashtag bank and a posting cadence."
+              description="Produces platform-native posts — different captions for FB, IG, LinkedIn and X — plus content pillars, a hashtag bank and a posting cadence."
               action={<Button onClick={() => setView("new")}><Sparkles className="h-4 w-4 mr-1.5" /> New Campaign</Button>}
             />
           ) : (
             <div className="grid md:grid-cols-2 gap-3">
               {history.map((c) => (
-                <Card key={c.id} className="hover:shadow-md hover:border-primary/40 transition-all cursor-pointer" onClick={() => openDetail(c.id)}>
+                <Card key={c.id} className="hover:shadow-md hover:-translate-y-1 hover:border-primary/40 transition-all cursor-pointer" onClick={() => openDetail(c.id)}>
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0 flex-1">
@@ -201,8 +208,8 @@ function NewSocialForm({ onBack, onCreated }: { onBack: () => void; onCreated: (
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid sm:grid-cols-2 gap-4">
-            <Field label="Brand *"><Input value={form.brand} onChange={(e) => setForm({ ...form, brand: e.target.value })} placeholder="MarketMind AI" /></Field>
-            <Field label="Product / offer *"><Input value={form.product} onChange={(e) => setForm({ ...form, product: e.target.value })} placeholder="AI marketing agency subscription" /></Field>
+            <Field label="Brand *"><Input value={form.brand} onChange={(e) => setForm({ ...form, brand: e.target.value })} placeholder="Example Brand" /></Field>
+            <Field label="Product / offer *"><Input value={form.product} onChange={(e) => setForm({ ...form, product: e.target.value })} placeholder="Marketing campaign offering" /></Field>
           </div>
           <Field label="Target audience *"><Input value={form.audience} onChange={(e) => setForm({ ...form, audience: e.target.value })} placeholder="SaaS founders & marketing managers" /></Field>
           <Field label="Website URL (optional — agent reads it for context)"><Input value={form.url} onChange={(e) => setForm({ ...form, url: e.target.value })} placeholder="https://yourbrand.com" /></Field>
@@ -219,7 +226,7 @@ function NewSocialForm({ onBack, onCreated }: { onBack: () => void; onCreated: (
                     type="button"
                     onClick={() => togglePlatform(p.id)}
                     className={cn(
-                      "flex flex-col items-center gap-1.5 rounded-lg border-2 p-3 text-xs font-medium transition-all",
+                      "flex flex-col items-center gap-1.5 rounded-lg border-2 p-3 text-xs font-medium transition-all hover:scale-[1.02] active:scale-[0.98]",
                       active ? cn("border-current ring-2", p.color, p.ring) : "border-border text-muted-foreground hover:bg-muted"
                     )}
                   >

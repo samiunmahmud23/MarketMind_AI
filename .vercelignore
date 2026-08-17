@@ -1,0 +1,17 @@
+# Files the Vercel CLI must NOT upload. The build runs on Vercel and reads its
+# own Environment Variables, so local secrets/data never leave this machine.
+node_modules
+.next
+.git
+.vercel
+.env
+.env.*
+db/
+upload/
+tool-results/
+.zscripts/
+Caddyfile
+bun.lock
+project_log.md
+.claude
+.claudeignore

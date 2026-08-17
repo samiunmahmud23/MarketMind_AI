@@ -33,3 +33,70 @@ export async function GET(
 
   return NextResponse.json({ recipients, total });
 }
+
+export async function POST(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+
+  try {
+    const body = await req.json();
+    const { email, name, company, notes } = body;
+
+    // Validate email
+    if (!email || typeof email !== "string" || !email.includes("@")) {
+      return NextResponse.json(
+        { error: "Valid email address is required" },
+        { status: 400 }
+      );
+    }
+
+    // Verify campaign exists
+    const campaign = await db.campaign.findUnique({ where: { id } });
+    if (!campaign) {
+      return NextResponse.json(
+        { error: "Campaign not found" },
+        { status: 404 }
+      );
+    }
+
+    // Check if recipient already exists
+    const existing = await db.recipient.findFirst({
+      where: { campaignId: id, email },
+    });
+
+    if (existing) {
+      return NextResponse.json(
+        { error: "Recipient with this email already exists" },
+        { status: 409 }
+      );
+    }
+
+    // Create the recipient
+    const recipient = await db.recipient.create({
+      data: {
+        campaignId: id,
+        email,
+        name: name || null,
+        company: company || null,
+        notes: notes || null,
+      },
+    });
+
+    // Get updated total count
+    const total = await db.recipient.count({ where: { campaignId: id } });
+
+    return NextResponse.json({
+      ok: true,
+      recipient,
+      total,
+    });
+  } catch (e: any) {
+    console.error("POST /recipients error", e);
+    return NextResponse.json(
+      { error: e?.message || "Failed to add recipient" },
+      { status: 500 }
+    );
+  }
+}

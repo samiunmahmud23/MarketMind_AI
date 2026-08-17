@@ -33,7 +33,7 @@ const STEPS = [
   "Writing recommendations & 30-day action plan",
 ];
 
-export function SeoSection() {
+export function SeoSection({ itemId }: { itemId?: string | null }) {
   const [url, setUrl] = React.useState("");
   const [busy, setBusy] = React.useState(false);
   const [stepIdx, setStepIdx] = React.useState(0);
@@ -55,6 +55,14 @@ export function SeoSection() {
 
   React.useEffect(() => { loadHistory(); }, [loadHistory]);
 
+  // Auto-open specific item when navigated from global search
+  React.useEffect(() => {
+    if (itemId) {
+      viewHistory(itemId);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [itemId]);
+
   React.useEffect(() => {
     if (!busy) return;
     setStepIdx(0);
@@ -66,6 +74,12 @@ export function SeoSection() {
   async function run(targetUrl?: string) {
     const u = (targetUrl || url).trim();
     if (!u) { toast.error("Enter a website URL"); return; }
+    try {
+      new URL(u.startsWith('http') ? u : `https://${u}`);
+    } catch {
+      toast.error("Please enter a valid URL (e.g., https://example.com)");
+      return;
+    }
     setBusy(true);
     setResult(null);
     try {
@@ -130,7 +144,7 @@ export function SeoSection() {
       {busy && (
         <Card>
           <CardContent className="p-6">
-            <div className="flex items-center gap-2 mb-4"><Loader2 className="h-4 w-4 animate-spin text-sky-600" /><span className="text-sm font-medium">SeoStrategist agent is working…</span></div>
+            <div className="flex items-center gap-2 mb-4"><Loader2 className="h-4 w-4 animate-spin text-sky-600" /><span className="text-sm font-medium">SEO audit is running…</span></div>
             <div className="space-y-2.5">
               {STEPS.map((s, i) => (
                 <div key={s} className="flex items-center gap-2.5">
@@ -313,7 +327,7 @@ export function SeoSection() {
             {loadingHistory
               ? Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-14 w-full" />)
               : history.map((h) => (
-                  <div key={h.id} className="flex items-center gap-3 rounded-lg border border-border p-3">
+                  <div key={h.id} className="flex items-center gap-3 rounded-lg border border-border p-3 transition-colors hover:bg-muted/50 group">
                     <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-sky-500/10 text-sky-600 shrink-0"><Search className="h-4 w-4" /></div>
                     <button onClick={() => viewHistory(h.id)} className="min-w-0 flex-1 text-left">
                       <div className="text-sm font-medium truncate">{h.domain || h.url}</div>

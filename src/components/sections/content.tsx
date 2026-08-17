@@ -39,7 +39,7 @@ const TYPE_META: Record<string, { label: string; icon: any; color: string; desc:
   calendar: { label: "Content Calendar", icon: CalendarDays, color: "text-sky-600 bg-sky-500/10", desc: "4-week plan" },
 };
 
-export function ContentSection() {
+export function ContentSection({ itemId }: { itemId?: string | null }) {
   const [form, setForm] = React.useState({
     type: "blog",
     topic: "",
@@ -66,6 +66,14 @@ export function ContentSection() {
   }, []);
 
   React.useEffect(() => { loadHistory(); }, [loadHistory]);
+
+  // Auto-open specific item when navigated from global search
+  React.useEffect(() => {
+    if (itemId) {
+      viewHistory(itemId);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [itemId]);
 
   React.useEffect(() => {
     if (!busy) return;
@@ -142,7 +150,7 @@ export function ContentSection() {
               </div>
             </div>
             <Field label="Topic *"><Input value={form.topic} onChange={(e) => setForm({ ...form, topic: e.target.value })} placeholder="How AI is reshaping email marketing" /></Field>
-            <Field label="Brand (optional)"><Input value={form.brand} onChange={(e) => setForm({ ...form, brand: e.target.value })} placeholder="MarketMind AI" /></Field>
+            <Field label="Brand (optional)"><Input value={form.brand} onChange={(e) => setForm({ ...form, brand: e.target.value })} placeholder="Example Brand" /></Field>
             <Field label="Audience (optional)"><Input value={form.audience} onChange={(e) => setForm({ ...form, audience: e.target.value })} placeholder="Marketing managers at SaaS startups" /></Field>
             <Field label="Keywords (comma-separated, optional — agent researches if empty)"><Input value={form.keywords} onChange={(e) => setForm({ ...form, keywords: e.target.value })} placeholder="ai email marketing, cold email automation" /></Field>
             <Button onClick={generate} disabled={busy} className="w-full bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700">
@@ -155,7 +163,7 @@ export function ContentSection() {
           {busy && (
             <Card>
               <CardContent className="p-5">
-                <div className="flex items-center gap-2 mb-3"><Loader2 className="h-4 w-4 animate-spin text-violet-600" /><span className="text-sm font-medium">ContentStrategist agent is writing…</span></div>
+                <div className="flex items-center gap-2 mb-3"><Loader2 className="h-4 w-4 animate-spin text-violet-600" /><span className="text-sm font-medium">Content strategist is writing…</span></div>
                 <div className="space-y-2.5">
                   {STEPS.map((s, i) => (
                     <div key={s} className="flex items-center gap-2.5">
@@ -234,7 +242,7 @@ export function ContentSection() {
             <EmptyState
               icon={<FileText className="h-10 w-10" />}
               title="Generate SEO content"
-              description="Pick a content type, enter a topic, and the ContentStrategist agent researches keywords, builds an outline, and writes a full SEO-optimized article, strategy doc, or calendar."
+              description="Pick a content type, enter a topic, and the workflow researches keywords, builds an outline, and writes a full SEO-optimized article, strategy doc, or calendar."
             />
           )}
         </div>

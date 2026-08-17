@@ -7,7 +7,7 @@ import { rateLimit } from "@/lib/rate-limit";
 export const runtime = "nodejs";
 
 /**
- * POST /api/billing/checkout  { tier: "starter" | "pro" | "agency" }
+ * POST /api/billing/checkout  { tier: "free" | "starter" | "pro" | "agency" }
  * Creates a Stripe Checkout Session (subscription) and returns its URL.
  * The client redirects the browser to that URL. On success Stripe returns to
  * `success_url`; the authoritative tier update happens in the webhook.
@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
   const { tier } = await req.json();
   const plan = PLANS[tier as string];
   if (!plan) {
-    return NextResponse.json({ error: "Choose a paid plan (starter, pro or agency)." }, { status: 400 });
+    return NextResponse.json({ error: "Choose a valid plan (free, starter, pro or agency)." }, { status: 400 });
   }
 
   if (!stripeEnabled) {
@@ -55,6 +55,7 @@ export async function POST(req: NextRequest) {
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       customer: customerId,
+      payment_method_collection: "if_required",
       line_items: [
         {
           quantity: 1,
@@ -62,7 +63,7 @@ export async function POST(req: NextRequest) {
             currency: "usd",
             unit_amount: plan.amount,
             recurring: { interval: "month" },
-            product_data: { name: `MarketMind AI — ${plan.name}` },
+            product_data: { name: `Marketing Platform — ${plan.name}` },
           },
         },
       ],

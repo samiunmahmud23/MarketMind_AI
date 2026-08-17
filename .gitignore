@@ -59,3 +59,6 @@ bun.lock
 project_log.md
 /tool-results/
 .claudeignore
+
+.vercel
+.env*

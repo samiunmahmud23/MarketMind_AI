@@ -131,6 +131,8 @@ export interface SendEmailParams {
   text: string; // plain text body
   html?: string; // optional HTML body
   productImage?: string; // optional base64 data URL — attached inline (SMTP only)
+  trackingPixelUrl?: string; // For open tracking
+  clickBaseUrl?: string; // For click tracking
 }
 
 export interface SendEmailResult {
@@ -224,7 +226,12 @@ export async function sendCampaignEmail(
   const img = params.productImage ? parseDataUrl(params.productImage) : null;
   const html =
     params.html ||
-    textToHtml(params.text, { imageCid: img ? "productimg" : undefined, brandName: settings.fromName });
+    textToHtml(params.text, { 
+      imageCid: img ? "productimg" : undefined, 
+      brandName: settings.fromName,
+      trackingPixelUrl: params.trackingPixelUrl,
+      clickBaseUrl: params.clickBaseUrl
+    });
   const attachments = img
     ? [{
         filename: `product.${img.ext}`,
@@ -281,13 +288,26 @@ export async function sendEmail(
  */
 export function textToHtml(
   text: string,
-  opts?: { imageCid?: string; brandName?: string; preheader?: string }
+  opts?: { imageCid?: string; brandName?: string; preheader?: string; trackingPixelUrl?: string; clickBaseUrl?: string }
 ): string {
-  const brand = opts?.brandName || "MarketMind AI";
-  const escaped = String(text)
+  const brand = opts?.brandName || "Marketing";
+  let escaped = String(text)
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
+
+  // Inject click tracking if clickBaseUrl is provided
+  if (opts?.clickBaseUrl) {
+    // Regex to match URLs (http or https). Must match before we convert to HTML paragraphs.
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    escaped = escaped.replace(urlRegex, (url) => {
+      // Unescape &amp; back to & for the actual redirect URL
+      const unescapedUrl = url.replace(/&amp;/g, '&');
+      const trackedUrl = `${opts.clickBaseUrl}?url=${encodeURIComponent(unescapedUrl)}`;
+      return `<a href="${trackedUrl}" style="color:#0ea5e9;text-decoration:underline;">${url}</a>`;
+    });
+  }
+
   const paragraphs = escaped
     .split(/\n{2,}/)
     .map((p) => p.trim())
@@ -297,6 +317,9 @@ export function textToHtml(
   const preheader = (opts?.preheader || escaped.replace(/\s+/g, " ").slice(0, 110)).trim();
   const imageBlock = opts?.imageCid
     ? `<tr><td style="padding:24px 40px 0;"><img src="cid:${opts.imageCid}" alt="${brand}" style="display:block;width:100%;max-width:520px;height:auto;border-radius:10px;border:1px solid #eef0f2;" /></td></tr>`
+    : "";
+  const pixelBlock = opts?.trackingPixelUrl 
+    ? `<img src="${opts.trackingPixelUrl}" width="1" height="1" alt="" style="display:none;max-height:0;max-width:0;opacity:0;" />` 
     : "";
   return `<!DOCTYPE html>
 <html>
@@ -313,6 +336,7 @@ export function textToHtml(
         </td></tr>
         <tr><td style="padding:16px 40px 28px 40px;border-top:1px solid #eef0f2;font-size:12px;color:#98a0ae;">
           Sent by ${brand}
+          ${pixelBlock}
         </td></tr>
       </table>
     </td></tr>

@@ -21,10 +21,11 @@ export const maxDuration = 300;
  * is fully personalized and private — never CC/BCC a list.
  */
 export async function POST(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
+  const origin = req.nextUrl.origin;
 
   // 1. Load email config (SMTP or Web3Forms)
   const smtp = await getSmtpConfig();
@@ -133,6 +134,8 @@ export async function POST(
         subject: sentSubject,
         text: sentBody,
         productImage: campaign.productImage || undefined,
+        trackingPixelUrl: `${origin}/api/track/open?id=${r.id}`,
+        clickBaseUrl: `${origin}/api/track/click?id=${r.id}`,
       },
       sharedTransporter
     );

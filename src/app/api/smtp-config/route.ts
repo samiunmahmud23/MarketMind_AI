@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
     port: parseInt(port) || 587,
     secure: !!secure,
     user: prov === "smtp" ? user : null,
-    fromName: fromName || "MarketMind AI",
+    fromName: fromName || "Your Brand",
     fromEmail,
     web3formsKey: prov === "web3forms" ? web3formsKey : null,
     isDefault: true,

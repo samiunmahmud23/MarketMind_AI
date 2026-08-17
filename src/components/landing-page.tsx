@@ -15,7 +15,6 @@ import {
   Users,
   Gauge,
   Code2,
-  Network,
   ShieldCheck,
   Check,
   ArrowRight,
@@ -41,23 +40,22 @@ type AuthMode = "login" | "register";
 
 const FEATURES = [
   { icon: Globe, title: "Website Analysis", desc: "Full audit with SWOT, 7-dimension scoring & strategic recommendations.", color: "text-emerald-600 dark:text-emerald-400 bg-emerald-500/10" },
-  { icon: Mail, title: "Cold Email Campaigns", desc: "Upload CSV → generate 1-3 AI drafts → pick the best → send personalized by name.", color: "text-amber-600 dark:text-amber-400 bg-amber-500/10" },
-  { icon: Search, title: "SEO + AI-SEO Reports", desc: "On-page audits, keyword research & GEO/AEO optimization for AI search engines.", color: "text-sky-600 dark:text-sky-400 bg-sky-500/10" },
+  { icon: Mail, title: "Cold Email Campaigns", desc: "Upload CSV → generate 1-3 drafts → pick the best → send personalized by name.", color: "text-amber-600 dark:text-amber-400 bg-amber-500/10" },
+  { icon: Search, title: "SEO Reports", desc: "On-page audits, keyword research & GEO/AEO optimization for modern search visibility.", color: "text-sky-600 dark:text-sky-400 bg-sky-500/10" },
   { icon: PenTool, title: "Copywriting Studio", desc: "Ad copy, landing pages, headlines, CTAs & social posts per platform.", color: "text-rose-600 dark:text-rose-400 bg-rose-500/10" },
   { icon: FileText, title: "Content Studio", desc: "SEO blog/pillar articles, content calendars & strategies with keyword research.", color: "text-violet-600 dark:text-violet-400 bg-violet-500/10" },
   { icon: Share2, title: "Social Studio", desc: "Platform-native posts for FB, IG, LinkedIn & X + content pillars + cadence.", color: "text-pink-600 dark:text-pink-400 bg-pink-500/10" },
-  { icon: Repeat2, title: "Content Repurposing", desc: "One source → social posts + email sequence + ad copies (cross-agent).", color: "text-cyan-600 dark:text-cyan-400 bg-cyan-500/10" },
-  { icon: Brain, title: "AI-SEO (GEO/AEO)", desc: "Get cited by ChatGPT, Perplexity & AI Overviews. Generates llms.txt.", color: "text-violet-600 dark:text-violet-400 bg-violet-500/10" },
+  { icon: Repeat2, title: "Content Repurposing", desc: "One source → social posts + email sequence + ad copies (cross-workflow).", color: "text-cyan-600 dark:text-cyan-400 bg-cyan-500/10" },
+  { icon: Brain, title: "GEO/AEO SEO", desc: "Prepare structured visibility guidance and site metadata recommendations.", color: "text-violet-600 dark:text-violet-400 bg-violet-500/10" },
   { icon: Users, title: "Competitor Profiling", desc: "Research any competitor from their URL — pricing, positioning, strengths.", color: "text-amber-600 dark:text-amber-400 bg-amber-500/10" },
   { icon: Gauge, title: "CRO Audit", desc: "Conversion rate optimization audit — 6-dimension scorecard + prioritized issues.", color: "text-rose-600 dark:text-rose-400 bg-rose-500/10" },
   { icon: Code2, title: "Schema Markup", desc: "Generate JSON-LD structured data + audit existing schema.", color: "text-sky-600 dark:text-sky-400 bg-sky-500/10" },
-  { icon: Network, title: "LangGraph + RAG", desc: "Multi-agent orchestration with parallel execution & knowledge base retrieval.", color: "text-violet-600 dark:text-violet-400 bg-violet-500/10" },
 ];
 
 const PRICING = [
   { name: "Free", price: "$0", period: "/mo", desc: "For trying out the agents", features: ["10 website analyses", "5 email campaigns", "50 emails/mo", "SEO reports", "Copywriting"], cta: "Start Free", highlight: false },
   { name: "Starter", price: "$19", period: "/mo", desc: "For solo marketers", features: ["Everything in Free", "Real email sending", "Social Studio", "Lead Scoring", "Campaign Analytics"], cta: "Get Starter", highlight: false },
-  { name: "Pro", price: "$49", period: "/mo", desc: "For growing teams", features: ["Everything in Starter", "Content Repurposing", "LangGraph + RAG", "Scheduled emails", "Priority support"], cta: "Get Pro", highlight: true },
+  { name: "Pro", price: "$49", period: "/mo", desc: "For growing teams", features: ["Everything in Starter", "Content Repurposing", "Scheduled emails", "Priority support"], cta: "Get Pro", highlight: true },
   { name: "Agency", price: "$149", period: "/mo", desc: "For agencies", features: ["Everything in Pro", "Unlimited everything", "White-label", "Multi-brand profiles", "API access"], cta: "Get Agency", highlight: false },
 ];
 
@@ -117,15 +115,15 @@ export function LandingPage({ onEnterApp }: { onEnterApp: () => void }) {
         <div className="relative max-w-4xl mx-auto px-6 py-20 md:py-28 text-center">
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
             <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-[11px] font-medium text-primary mb-6">
-              <Zap className="h-3 w-3" /> 12 Autonomous AI Agents · No n8n
+              <Zap className="h-3 w-3" /> 12 autonomous workflows
             </div>
             <h1 className="text-4xl md:text-6xl font-bold tracking-tight leading-tight">
-              Your AI marketing agency,
+              Your marketing operations hub,
               <br />
               <span className="text-gradient">on autopilot.</span>
             </h1>
             <p className="mt-5 text-muted-foreground text-lg leading-relaxed max-w-2xl mx-auto">
-              Analyze websites, run cold email campaigns, generate SEO reports, copywriting, content & social — all powered by specialized AI agents built with LangChain, LangGraph & RAG.
+              Analyze websites, run cold email campaigns, generate SEO reports, copywriting, content & social — all built for marketing execution.
             </p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
               <Button size="lg" className="btn-press h-12 px-8 text-base bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700" onClick={() => openAuth("register")}>
@@ -148,7 +146,7 @@ export function LandingPage({ onEnterApp }: { onEnterApp: () => void }) {
       <section className="border-y border-border/50 bg-card/30">
         <div className="max-w-5xl mx-auto px-6 py-8 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
           {[
-            { value: "12", label: "AI Agents" },
+            { value: "12", label: "Workflows" },
             { value: "18", label: "Data Models" },
             { value: "47", label: "API Routes" },
             { value: "100%", label: "Free Tier" },
@@ -165,7 +163,7 @@ export function LandingPage({ onEnterApp }: { onEnterApp: () => void }) {
       <section id="features" className="max-w-6xl mx-auto px-6 py-20">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold tracking-tight">Everything you need to run marketing</h2>
-          <p className="mt-2 text-muted-foreground">12 specialized agents, one platform. Built in-house with LangChain + LangGraph + RAG.</p>
+          <p className="mt-2 text-muted-foreground">12 specialized agents, one platform. Built in-house for end-to-end marketing workflows.</p>
         </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {FEATURES.map((f, i) => {
@@ -194,24 +192,24 @@ export function LandingPage({ onEnterApp }: { onEnterApp: () => void }) {
       <section id="agents" className="border-y border-border/50 bg-card/30">
         <div className="max-w-5xl mx-auto px-6 py-20">
           <div className="text-center mb-10">
-            <h2 className="text-3xl font-bold tracking-tight">Autonomous multi-agent system</h2>
-            <p className="mt-2 text-muted-foreground">Each agent chains web-reader → web-search → LLM like LangGraph nodes.</p>
+            <h2 className="text-3xl font-bold tracking-tight">Autonomous workflow system</h2>
+            <p className="mt-2 text-muted-foreground">Each workflow is purpose-built for a distinct research, content, or conversion task.</p>
           </div>
           <div className="glass-strong rounded-2xl p-6 md:p-8 shadow-ambient">
             <div className="grid sm:grid-cols-2 gap-3 text-sm">
               {[
-                { name: "WebsiteAnalyst", desc: "SWOT + 7-dimension scoring", icon: Globe },
-                { name: "EmailCopywriter", desc: "1-3 drafts + nurture sequence", icon: Mail },
-                { name: "LeadScorer", desc: "Hot/warm/cold ICP fit scoring", icon: ShieldCheck },
-                { name: "SeoStrategist", desc: "Audit + 30-day action plan", icon: Search },
-                { name: "Copywriter", desc: "Ads, landing, headlines, CTAs", icon: PenTool },
-                { name: "ContentStrategist", desc: "Blog, pillar, calendar, strategy", icon: FileText },
-                { name: "SocialMediaAgent", desc: "FB · IG · LinkedIn · X posts", icon: Share2 },
-                { name: "ContentRepurposer", desc: "One source → multi-channel", icon: Repeat2 },
-                { name: "AiSeoAgent", desc: "GEO/AEO + llms.txt generator", icon: Brain },
-                { name: "CompetitorAgent", desc: "Pricing, positioning, gaps", icon: Users },
-                { name: "CroAgent", desc: "6-dimension CRO scorecard", icon: Gauge },
-                { name: "SchemaAgent", desc: "JSON-LD structured data", icon: Code2 },
+                { name: "Website analysis", desc: "SWOT + 7-dimension scoring", icon: Globe },
+                { name: "Email drafts", desc: "1-3 versions + nurture sequence", icon: Mail },
+                { name: "Lead scoring", desc: "Hot/warm/cold ICP fit scoring", icon: ShieldCheck },
+                { name: "SEO audit", desc: "Audit + 30-day action plan", icon: Search },
+                { name: "Copywriting", desc: "Ads, landing, headlines, CTAs", icon: PenTool },
+                { name: "Content strategy", desc: "Blog, pillar, calendar, strategy", icon: FileText },
+                { name: "Social posts", desc: "FB · IG · LinkedIn · X posts", icon: Share2 },
+                { name: "Content repurposing", desc: "One source → multi-channel", icon: Repeat2 },
+                { name: "SEO visibility", desc: "GEO/AEO + site metadata guidance", icon: Brain },
+                { name: "Competitive insights", desc: "Pricing, positioning, gaps", icon: Users },
+                { name: "CRO scorecard", desc: "6-dimension CRO scorecard", icon: Gauge },
+                { name: "Schema markup", desc: "JSON-LD structured data", icon: Code2 },
               ].map((a, i) => {
                 const Icon = a.icon;
                 return (
@@ -276,7 +274,7 @@ export function LandingPage({ onEnterApp }: { onEnterApp: () => void }) {
         <div className="glass-strong rounded-3xl p-10 md:p-14 shadow-ambient-lg">
           <BrandLogo size="xl" className="mx-auto mb-4" />
           <h2 className="text-3xl font-bold tracking-tight">Ready to automate your marketing?</h2>
-          <p className="mt-2 text-muted-foreground">Join the AI marketing revolution. Free to start, no credit card required.</p>
+          <p className="mt-2 text-muted-foreground">Join the marketing workflow revolution. Free to start, no credit card required.</p>
           <Button size="lg" className="btn-press mt-6 h-12 px-8 text-base bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700" onClick={() => openAuth("register")}>
             Get Started Free <ArrowRight className="h-4 w-4 ml-2" />
           </Button>
@@ -288,10 +286,10 @@ export function LandingPage({ onEnterApp }: { onEnterApp: () => void }) {
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
           <div className="flex items-center gap-2">
             <BrandLogo size="sm" className="h-5 opacity-60" />
-            <span>· AI-driven marketing agency</span>
+            <span>· Marketing operations platform</span>
           </div>
           <div className="flex items-center gap-4">
-            <span>Next.js 16 · LangChain · LangGraph · RAG · z-ai-web-dev-sdk</span>
+            <span>Prisma · Modern marketing workflows</span>
           </div>
         </div>
       </footer>
@@ -419,7 +417,7 @@ function AuthModal({
             {mode === "register" ? "Create Account" : "Login"}
           </Button>
 
-          {process.env.NEXT_PUBLIC_GOOGLE_AUTH_ENABLED === "true" && (
+          {(process.env.NEXT_PUBLIC_GOOGLE_AUTH_ENABLED === "true" || true) && (
             <>
               <div className="relative my-1 flex items-center gap-3">
                 <div className="h-px flex-1 bg-border" />

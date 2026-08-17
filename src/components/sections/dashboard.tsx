@@ -59,14 +59,17 @@ const fadeUp = {
 export function DashboardSection({ onNavigate }: { onNavigate: (id: SectionId) => void }) {
   const [data, setData] = React.useState<DashboardData | null>(null);
   const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
 
   const load = React.useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
       const data = await apiFetch<DashboardData>("/api/dashboard", { retries: 3 });
       setData(data);
-    } catch (e) {
+    } catch (e: any) {
       if (e instanceof ApiError && e.isServerDown) toast.error(e.message);
+      setError(e?.message || "Failed to load dashboard data.");
     } finally {
       setLoading(false);
     }
@@ -103,15 +106,15 @@ export function DashboardSection({ onNavigate }: { onNavigate: (id: SectionId) =
               <div className="max-w-2xl">
                 <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-[11px] font-medium text-primary mb-4">
                   <Sparkles className="h-3 w-3" />
-                  Autonomous Multi-Agent System
+                  Autonomous marketing system
                 </div>
                 <h2 className="text-3xl md:text-4xl font-bold tracking-tight leading-tight">
-                  Your AI marketing agency,
+                  Your marketing operations hub,
                   <br />
                   <span className="text-gradient">on autopilot.</span>
                 </h2>
                 <p className="mt-3 text-muted-foreground text-sm md:text-base leading-relaxed max-w-lg">
-                  8 specialized agents analyze websites, generate cold email campaigns, SEO reports, copywriting, content & social — all in-house, no n8n.
+                  8 specialized workflows analyze websites, generate cold email campaigns, SEO reports, copywriting, content & social — all in-house.
                 </p>
                 <div className="mt-6 flex flex-wrap gap-2">
                   <Button onClick={() => onNavigate("analysis")} className="btn-press h-10 px-5 bg-primary text-primary-foreground hover:bg-primary/90">
@@ -133,29 +136,41 @@ export function DashboardSection({ onNavigate }: { onNavigate: (id: SectionId) =
       </motion.div>
 
       {/* Stat grid — glass cards with hover lift */}
-      <motion.div
-        className="grid grid-cols-2 md:grid-cols-4 gap-4"
-        initial="hidden"
-        animate="show"
-        variants={{ show: { transition: { staggerChildren: 0.06 } } }}
-      >
-        {loading
-          ? Array.from({ length: 8 }).map((_, i) => (
-              <ShimmerSkeleton key={i} className="h-32" />
-            ))
-          : stats.map((s) => (
-              <motion.div key={s.label} variants={fadeUp}>
-                <StatCard
-                  icon={s.icon}
-                  label={s.label}
-                  value={s.value}
-                  color={s.color}
-                  bg={s.bg}
-                  onClick={() => onNavigate(s.section)}
-                />
-              </motion.div>
-            ))}
-      </motion.div>
+      {error && !data ? (
+        <div className="glass rounded-2xl p-10 text-center border-destructive/20 bg-destructive/5 flex flex-col items-center justify-center">
+          <Activity className="h-8 w-8 text-destructive mb-3" />
+          <h3 className="font-semibold text-lg tracking-tight text-destructive mb-2">Failed to load data</h3>
+          <p className="text-sm text-muted-foreground mb-5 max-w-sm">{error}</p>
+          <Button onClick={load} variant="outline" className="border-destructive/30 text-destructive hover:bg-destructive/10">
+            <Repeat2 className="h-4 w-4 mr-2" />
+            Try Again
+          </Button>
+        </div>
+      ) : (
+        <motion.div
+          className="grid grid-cols-2 md:grid-cols-4 gap-4"
+          initial="hidden"
+          animate="show"
+          variants={{ show: { transition: { staggerChildren: 0.06 } } }}
+        >
+          {loading
+            ? Array.from({ length: 8 }).map((_, i) => (
+                <ShimmerSkeleton key={i} className="h-32" />
+              ))
+            : stats.map((s) => (
+                <motion.div key={s.label} variants={fadeUp}>
+                  <StatCard
+                    icon={s.icon}
+                    label={s.label}
+                    value={s.value}
+                    color={s.color}
+                    bg={s.bg}
+                    onClick={() => onNavigate(s.section)}
+                  />
+                </motion.div>
+              ))}
+        </motion.div>
+      )}
 
       {/* Recent activity — 3 columns */}
       <div className="grid lg:grid-cols-3 gap-5">
@@ -215,7 +230,7 @@ export function DashboardSection({ onNavigate }: { onNavigate: (id: SectionId) =
       <div>
         <div className="flex items-center gap-2 mb-5">
           <Activity className="h-4 w-4 text-primary" />
-          <h3 className="text-base font-semibold tracking-tight">Agent Capabilities</h3>
+          <h3 className="text-base font-semibold tracking-tight">Capabilities</h3>
         </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {CAPABILITIES.map((c, i) => {
@@ -245,17 +260,17 @@ export function DashboardSection({ onNavigate }: { onNavigate: (id: SectionId) =
 }
 
 const CAPABILITIES: { icon: LucideIcon; title: string; desc: string; color: string }[] = [
-  { icon: Globe, title: "WebsiteAnalyst", desc: "Reads any URL/FB/IG page, extracts brand signals, runs SWOT + scoring, produces a full report.", color: "text-emerald-600 dark:text-emerald-400 bg-emerald-500/10" },
-  { icon: Mail, title: "EmailCopywriter", desc: "Researches SEO keywords, writes 1-3 cold email drafts (pain/outcome/authority) + nurture sequence.", color: "text-amber-600 dark:text-amber-400 bg-amber-500/10" },
-  { icon: Target, title: "LeadScorer", desc: "Scores every CSV recipient for ICP fit (hot/warm/cold) using domain & email-signal heuristics.", color: "text-orange-600 dark:text-orange-400 bg-orange-500/10" },
-  { icon: Search, title: "SeoStrategist", desc: "Audits on-page SEO, finds keyword gaps, scores 4 dimensions, outputs recommendations + 30-day action plan.", color: "text-sky-600 dark:text-sky-400 bg-sky-500/10" },
-  { icon: PenTool, title: "Copywriter", desc: "Generates ad copy, landing pages, headlines, CTAs & social posts tuned per platform.", color: "text-rose-600 dark:text-rose-400 bg-rose-500/10" },
-  { icon: FileText, title: "ContentStrategist", desc: "Writes SEO blog/pillar articles, content calendars & strategies with keyword research.", color: "text-violet-600 dark:text-violet-400 bg-violet-500/10" },
-  { icon: Share2, title: "SocialMediaAgent", desc: "Platform-native posts for FB, IG, LinkedIn & X — content pillars, hashtag bank, posting cadence.", color: "text-pink-600 dark:text-pink-400 bg-pink-500/10" },
-  { icon: Repeat2, title: "ContentRepurposer", desc: "One source → multi-channel: distills key takeaways, spins into social posts + email + ad copies.", color: "text-cyan-600 dark:text-cyan-400 bg-cyan-500/10" },
-  { icon: Settings, title: "Brand Profiles", desc: "Reusable brand configs (tone, audience, keywords, voice) auto-applied as defaults across all agents.", color: "text-slate-600 dark:text-slate-400 bg-slate-500/10" },
-  { icon: TrendingUp, title: "Pipeline orchestration", desc: "Each agent chains web-reader → web-search → LLM like LangGraph nodes. No n8n, fully in-house.", color: "text-teal-600 dark:text-teal-400 bg-teal-500/10" },
-  { icon: Zap, title: "All free-tier", desc: "SQLite database, z-ai-web-dev-sdk backend, Next.js 16. Zero paid services required to run.", color: "text-yellow-600 dark:text-yellow-400 bg-yellow-500/10" },
+  { icon: Globe, title: "Website analysis", desc: "Reads any URL/FB/IG page, extracts brand signals, runs SWOT + scoring, produces a full report.", color: "text-emerald-600 dark:text-emerald-400 bg-emerald-500/10" },
+  { icon: Mail, title: "Email drafts", desc: "Researches keywords, writes 1-3 cold email drafts (pain/outcome/authority) + nurture sequence.", color: "text-amber-600 dark:text-amber-400 bg-amber-500/10" },
+  { icon: Target, title: "Lead scoring", desc: "Scores every CSV recipient for ICP fit (hot/warm/cold) using domain & email-signal heuristics.", color: "text-orange-600 dark:text-orange-400 bg-orange-500/10" },
+  { icon: Search, title: "SEO audit", desc: "Audits on-page SEO, finds keyword gaps, scores 4 dimensions, outputs recommendations + 30-day action plan.", color: "text-sky-600 dark:text-sky-400 bg-sky-500/10" },
+  { icon: PenTool, title: "Copywriting", desc: "Generates ad copy, landing pages, headlines, CTAs & social posts tuned per platform.", color: "text-rose-600 dark:text-rose-400 bg-rose-500/10" },
+  { icon: FileText, title: "Content strategy", desc: "Writes SEO blog/pillar articles, content calendars & strategies with keyword research.", color: "text-violet-600 dark:text-violet-400 bg-violet-500/10" },
+  { icon: Share2, title: "Social posts", desc: "Platform-native posts for FB, IG, LinkedIn & X — content pillars, hashtag bank, posting cadence.", color: "text-pink-600 dark:text-pink-400 bg-pink-500/10" },
+  { icon: Repeat2, title: "Content repurposing", desc: "One source → multi-channel: distills key takeaways, spins into social posts + email + ad copies.", color: "text-cyan-600 dark:text-cyan-400 bg-cyan-500/10" },
+  { icon: Settings, title: "Brand profiles", desc: "Reusable brand configs (tone, audience, keywords, voice) auto-applied across all workflows.", color: "text-slate-600 dark:text-slate-400 bg-slate-500/10" },
+  { icon: TrendingUp, title: "Pipeline orchestration", desc: "Each workflow is purpose-built for website, content, SEO, and conversion tasks. Fully in-house.", color: "text-teal-600 dark:text-teal-400 bg-teal-500/10" },
+  { icon: Zap, title: "All free-tier", desc: "Free-tier backend, no paid services required to run.", color: "text-yellow-600 dark:text-yellow-400 bg-yellow-500/10" },
 ];
 
 function RecentCard({
@@ -293,19 +308,21 @@ function RecentCard({
           Array.from({ length: 3 }).map((_, i) => <ShimmerSkeleton key={i} className="h-14" />)
         ) : items.length > 0 ? (
           items.map((item) => (
-            <button
+            <motion.button
               key={item.id}
               onClick={onNavigate}
-              className="btn-press w-full text-left flex items-center gap-3 rounded-xl p-2.5 hover:bg-muted/50 transition-colors group"
+              whileHover={{ scale: 1.015, x: 2 }}
+              whileTap={{ scale: 0.98 }}
+              className="w-full text-left flex items-center gap-3 rounded-xl p-2.5 hover:bg-muted/50 transition-colors group"
             >
               <div className="min-w-0 flex-1">
-                <div className="text-sm font-medium truncate">{item.title}</div>
+                <div className="text-sm font-medium truncate group-hover:text-primary transition-colors">{item.title}</div>
                 <div className="text-xs text-muted-foreground truncate">{item.subtitle}</div>
               </div>
               {item.badge && (
                 <Badge variant="outline" className="text-[10px] font-medium tabular-nums shrink-0">{item.badge}</Badge>
               )}
-            </button>
+            </motion.button>
           ))
         ) : (
           <p className="text-sm text-muted-foreground/60 py-6 text-center">{emptyText}</p>

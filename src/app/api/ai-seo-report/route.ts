@@ -22,8 +22,8 @@ export async function POST(req: NextRequest) {
     });
     return NextResponse.json({ id: saved.id, ...result });
   } catch (e: any) {
-    console.error("ai-seo error", e);
-    return NextResponse.json({ error: e?.message || "AI-SEO analysis failed" }, { status: 500 });
+    console.error("seo report error", e);
+    return NextResponse.json({ error: e?.message || "SEO analysis failed" }, { status: 500 });
   }
 }
 

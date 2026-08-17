@@ -28,7 +28,7 @@ import { cn } from "@/lib/utils";
 type Tool = "ai-seo" | "competitor" | "cro" | "schema";
 
 const TOOLS: { id: Tool; label: string; icon: any; color: string; desc: string; placeholder: string }[] = [
-  { id: "ai-seo", label: "AI-SEO (GEO/AEO)", icon: Brain, color: "text-violet-600 dark:text-violet-400 bg-violet-500/10", desc: "Get cited by ChatGPT, Perplexity & AI Overviews", placeholder: "https://yourbrand.com" },
+  { id: "ai-seo", label: "GEO/AEO SEO", icon: Brain, color: "text-violet-600 dark:text-violet-400 bg-violet-500/10", desc: "Prepare for citation and structured visibility", placeholder: "https://yourbrand.com" },
   { id: "competitor", label: "Competitor Profiling", icon: Users, color: "text-amber-600 dark:text-amber-400 bg-amber-500/10", desc: "Research any competitor from their URL", placeholder: "https://competitor.com" },
   { id: "cro", label: "CRO Audit", icon: Gauge, color: "text-rose-600 dark:text-rose-400 bg-rose-500/10", desc: "Conversion rate optimization audit", placeholder: "https://yourbrand.com/pricing" },
   { id: "schema", label: "Schema Markup", icon: Code2, color: "text-sky-600 dark:text-sky-400 bg-sky-500/10", desc: "Generate JSON-LD structured data", placeholder: "https://yourbrand.com" },
@@ -71,6 +71,12 @@ export function MarketingSkillsSection() {
   async function run(targetUrl?: string) {
     const u = (targetUrl || url).trim();
     if (!u) { toast.error("Enter a URL"); return; }
+    try {
+      new URL(u.startsWith('http') ? u : `https://${u}`);
+    } catch {
+      toast.error("Please enter a valid URL (e.g., https://example.com)");
+      return;
+    }
     setBusy(true); setResult(null);
     try {
       const endpoints: Record<Tool, string> = {
@@ -157,7 +163,7 @@ export function MarketingSkillsSection() {
       {/* Loading */}
       {busy && (
         <GlassCard className="p-5">
-          <div className="flex items-center gap-2 mb-3"><Loader2 className="h-4 w-4 animate-spin text-primary" /><span className="text-sm font-medium">{currentTool.label} agent is working…</span></div>
+          <div className="flex items-center gap-2 mb-3"><Loader2 className="h-4 w-4 animate-spin text-primary" /><span className="text-sm font-medium">{currentTool.label} workflow is running…</span></div>
           <div className="space-y-2.5">
             {STEPS.map((s, i) => (
               <div key={s} className="flex items-center gap-2.5">
@@ -217,11 +223,11 @@ function AiSeoResult({ result }: { result: any }) {
       <GlassCard strong className="p-5">
         <div className="flex flex-col lg:flex-row gap-6">
           <div className="flex flex-col items-center justify-center gap-2 lg:border-r lg:border-border/50 lg:pr-6">
-            <ScoreRing value={result.overallScore} size={140} label="AI-SEO" />
+            <ScoreRing value={result.overallScore} size={140} label="SEO Audit" />
             <Badge variant="outline" className="text-xs">{result.domain}</Badge>
           </div>
           <div className="flex-1 grid sm:grid-cols-2 gap-x-6 gap-y-3">
-            <ScoreBar label="AI Visibility" value={result.scoreBreakdown?.aiVisibility ?? 0} />
+            <ScoreBar label="Visibility" value={result.scoreBreakdown?.aiVisibility ?? 0} />
             <ScoreBar label="Content Extractability" value={result.scoreBreakdown?.contentExtractability ?? 0} />
             <ScoreBar label="Structured Data" value={result.scoreBreakdown?.structuredData ?? 0} />
             <ScoreBar label="Citation Readiness" value={result.scoreBreakdown?.citationReadiness ?? 0} />
@@ -232,7 +238,7 @@ function AiSeoResult({ result }: { result: any }) {
       {result.llmsTxt && (
         <GlassCard className="overflow-hidden">
           <div className="flex items-center justify-between px-4 py-2.5 border-b border-border/50 bg-muted/30">
-            <span className="text-sm font-semibold">llms.txt — suggested file</span>
+            <span className="text-sm font-semibold">Site guidance file — suggested</span>
             <CopyButton text={result.llmsTxt} />
           </div>
           <pre className="whitespace-pre-wrap text-xs font-mono p-4 max-h-64 overflow-y-auto scroll-thin">{result.llmsTxt}</pre>
@@ -241,7 +247,7 @@ function AiSeoResult({ result }: { result: any }) {
 
       <GlassCard className="overflow-hidden">
         <div className="flex items-center justify-between px-4 py-2.5 border-b border-border/50">
-          <span className="text-sm font-semibold">Full AI-SEO Report</span>
+          <span className="text-sm font-semibold">Full SEO Report</span>
           <CopyButton text={result.report} />
         </div>
         <div className="p-4"><Markdown content={result.report} /></div>

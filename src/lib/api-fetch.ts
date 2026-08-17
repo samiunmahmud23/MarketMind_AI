@@ -1,7 +1,7 @@
 /**
  * Resilient API fetch wrapper.
  *
- * The MarketMind AI dev server occasionally restarts (sandbox supervisor).
+ * The dev server occasionally restarts (sandbox supervisor).
  * When it's down, the Caddy gateway returns an HTML 502 page, and a naive
  * `await res.json()` throws "Unexpected token '<'". This wrapper detects
  * non-JSON responses and throws a friendly ApiError instead, plus supports

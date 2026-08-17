@@ -7,9 +7,15 @@ export const maxDuration = 300;
 
 export async function POST(req: NextRequest) {
   try {
-    const { url } = await req.json();
-    if (!url) {
+    let { url } = await req.json();
+    if (!url || typeof url !== "string") {
       return NextResponse.json({ error: "url required" }, { status: 400 });
+    }
+
+    try {
+      url = new URL(url.includes("://") ? url : `https://${url}`).toString();
+    } catch {
+      return NextResponse.json({ error: "Invalid URL provided" }, { status: 400 });
     }
 
     const strategist = new SeoStrategist();

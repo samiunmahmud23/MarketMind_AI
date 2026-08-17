@@ -14,7 +14,7 @@ import { ContentSection } from "@/components/sections/content";
 import { SocialSection } from "@/components/sections/social";
 import { RepurposeSection } from "@/components/sections/repurpose";
 import { MarketingSkillsSection } from "@/components/sections/marketing-skills";
-import { LangChainSection } from "@/components/sections/langchain";
+import { ProductStudioSection } from "@/components/sections/product-studio";
 import { AccountSection } from "@/components/sections/account";
 import { SettingsSection } from "@/components/sections/settings";
 import { WelcomeOverlay } from "@/components/welcome-overlay";
@@ -25,6 +25,7 @@ const CINEMATIC = [0.22, 1, 0.36, 1] as const;
 export default function Page() {
   const [entered, setEntered] = React.useState(false);
   const [section, setSection] = React.useState<SectionId>("dashboard");
+  const [itemId, setItemId] = React.useState<string | null>(null);
   const { status } = useSession();
 
   // A real NextAuth session (e.g. after Google login) enters the app directly.
@@ -32,8 +33,9 @@ export default function Page() {
     if (status === "authenticated") setEntered(true);
   }, [status]);
 
-  function navigate(id: SectionId) {
+  function navigate(id: SectionId, detailId?: string) {
     setSection(id);
+    setItemId(detailId || null);
     if (typeof window !== "undefined") {
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
@@ -49,6 +51,7 @@ export default function Page() {
   function logout() {
     setEntered(false);
     setSection("dashboard");
+    setItemId(null);
     if (typeof window !== "undefined") {
       sessionStorage.removeItem("mm-entered");
     }
@@ -100,15 +103,15 @@ export default function Page() {
           transition={{ duration: 0.24, ease: CINEMATIC }}
         >
           {section === "dashboard" && <DashboardSection onNavigate={navigate} />}
-          {section === "analysis" && <WebsiteAnalysisSection />}
-          {section === "campaigns" && <EmailCampaignsSection />}
-          {section === "seo" && <SeoSection />}
-          {section === "copywriting" && <CopywritingSection />}
-          {section === "content" && <ContentSection />}
-          {section === "social" && <SocialSection />}
-          {section === "repurpose" && <RepurposeSection />}
-          {section === "marketing-skills" && <MarketingSkillsSection />}
-          {section === "langchain" && <LangChainSection />}
+          {section === "analysis" && <WebsiteAnalysisSection itemId={itemId} />}
+          {section === "campaigns" && <EmailCampaignsSection itemId={itemId} />}
+          {section === "seo" && <SeoSection itemId={itemId} />}
+          {section === "copywriting" && <CopywritingSection itemId={itemId} />}
+          {section === "content" && <ContentSection itemId={itemId} />}
+          {section === "product-studio" && <ProductStudioSection />}
+          {section === "social" && <SocialSection itemId={itemId} />}
+          {section === "repurpose" && <RepurposeSection itemId={itemId} />}
+          {section === "marketing-skills" && <MarketingSkillsSection itemId={itemId} />}
           {section === "account" && <AccountSection />}
           {section === "settings" && <SettingsSection />}
         </motion.div>

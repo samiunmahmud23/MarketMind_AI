@@ -1,0 +1,15 @@
+// Production schema for Vercel + Supabase PostgreSQL
+// This file is used during `vercel build` (DATABASE_URL starts with postgresql://)
+// For local dev, schema.prisma uses SQLite
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ---------- Website Analysis ----------

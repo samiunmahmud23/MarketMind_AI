@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
     secure: !!secure,
     user,
     pass: effectivePass,
-    fromName: fromName || "MarketMind AI",
+    fromName: fromName || "Your Brand",
     fromEmail: fromEmail || user,
   };
 

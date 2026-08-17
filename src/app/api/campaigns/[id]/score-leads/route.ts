@@ -17,7 +17,7 @@ export async function POST(
 
     const recipients = await db.recipient.findMany({
       where: { campaignId: id },
-      take: 100, // batch cap for token budget
+      take: 500, // safety cap to prevent 300s timeout on massive lists
       orderBy: { createdAt: "asc" },
     });
 
@@ -29,20 +29,30 @@ export async function POST(
     }
 
     const scorer = new LeadScorer();
-    const result = await scorer.run({
-      recipients: recipients.map((r) => ({
-        id: r.id,
-        email: r.email,
-        name: r.name,
-        company: r.company,
-      })),
-      productName: campaign.productName,
-      targetAudience: campaign.targetAudience,
-    });
+    const chunkSize = 100;
+    const allScores = [];
+    const allSummaries = [];
+
+    for (let i = 0; i < recipients.length; i += chunkSize) {
+      const chunk = recipients.slice(i, i + chunkSize);
+      const result = await scorer.run({
+        recipients: chunk.map((r) => ({
+          id: r.id,
+          email: r.email,
+          name: r.name,
+          company: r.company,
+        })),
+        productName: campaign.productName,
+        targetAudience: campaign.targetAudience,
+      });
+
+      allScores.push(...result.scores);
+      if (result.summary) allSummaries.push(result.summary);
+    }
 
     // Persist scores to DB
     await Promise.all(
-      result.scores.map((s) =>
+      allScores.map((s) =>
         db.recipient.update({
           where: { id: s.recipientId },
           data: {
@@ -56,8 +66,8 @@ export async function POST(
 
     return NextResponse.json({
       ok: true,
-      summary: result.summary,
-      scores: result.scores,
+      summary: allSummaries.join("\n\n"),
+      scores: allScores,
     });
   } catch (e: any) {
     console.error("score-leads error", e);

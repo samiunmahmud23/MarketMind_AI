@@ -91,8 +91,8 @@ async function chatCompletion(
 
 /**
  * Backwards-compatible client shim.
- * Kept so existing callers (e.g. the LangChain wrapper) keep working after
- * the migration off z-ai-web-dev-sdk.
+ * Kept so existing callers continue working after the migration off
+ * z-ai-web-dev-sdk.
  */
 export async function getZAI() {
   return {

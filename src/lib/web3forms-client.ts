@@ -96,10 +96,10 @@ export async function testWeb3FormsClient(
 ): Promise<{ ok: boolean; message: string }> {
   const payload = {
     access_key: accessKey,
-    subject: "MarketMind AI — Web3Forms test",
-    name: "MarketMind AI",
+    subject: "Marketing platform — Web3Forms test",
+    name: "Marketing platform",
     email: fromEmail,
-    message: "This is a test email from MarketMind AI. If you received this, your Web3Forms access key is working correctly.",
+    message: "This is a test email from your marketing platform. If you received this, your Web3Forms access key is working correctly.",
   };
 
   // Try 1: Direct browser call

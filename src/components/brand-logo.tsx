@@ -3,7 +3,7 @@
 import { cn } from "@/lib/utils";
 
 /**
- * BrandLogo — renders the MarketMind AI brand logo.
+ * BrandLogo — renders the brand logo.
  *
  * Sizes:
  * - "sm"  → 28px height (sidebar, mobile header)
@@ -27,8 +27,8 @@ export function BrandLogo({
 
   return (
     <img
-      src="/brand-logo-tiny.png"
-      alt="MarketMind AI"
+      src="/brand-logo.png"
+      alt="MarketMind AI logo"
       className={cn("w-auto object-contain", sizes[size], className)}
       draggable={false}
     />
@@ -36,7 +36,7 @@ export function BrandLogo({
 }
 
 /**
- * BrandLogoWithText — logo + "MarketMind AI" text next to it.
+ * BrandLogoWithText — logo + brand text next to it.
  * Used in sidebar, nav bar, auth modal header.
  */
 export function BrandLogoWithText({

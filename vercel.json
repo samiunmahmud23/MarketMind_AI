@@ -1,6 +1,21 @@
 {
-  "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
-  "installCommand": "npm install --legacy-peer-deps",
-  "buildCommand": "prisma generate && next build"
+  "buildCommand": "node scripts/vercel-build.mjs",
+  "installCommand": "npm install",
+  "functions": {
+    "src/app/api/analyze/route.ts":         { "maxDuration": 60 },
+    "src/app/api/product-studio/route.ts":  { "maxDuration": 60 },
+    "src/app/api/campaigns/route.ts":       { "maxDuration": 60 },
+    "src/app/api/seo-report/route.ts":      { "maxDuration": 60 },
+    "src/app/api/ai-seo-report/route.ts":   { "maxDuration": 60 },
+    "src/app/api/copywriting/route.ts":     { "maxDuration": 60 },
+    "src/app/api/content/route.ts":         { "maxDuration": 60 },
+    "src/app/api/social/route.ts":          { "maxDuration": 60 },
+    "src/app/api/repurpose/route.ts":       { "maxDuration": 60 },
+    "src/app/api/marketing-skills/route.ts":{ "maxDuration": 60 },
+    "src/app/api/cro-report/route.ts":      { "maxDuration": 60 },
+    "src/app/api/schema-report/route.ts":   { "maxDuration": 60 },
+    "src/app/api/competitor-profiles/route.ts": { "maxDuration": 60 },
+    "src/app/api/email/send/route.ts":      { "maxDuration": 60 }
+  }
 }

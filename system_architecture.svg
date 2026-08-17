@@ -1,0 +1,87 @@
+<svg width="1400" height="900" viewBox="0 0 1400 900" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0,0 L12,6 L0,12 z" fill="#374151"/>
+    </marker>
+    <style>
+      .title { font: bold 34px Calibri, Arial, sans-serif; fill: #111827; }
+      .label { font: 22px Calibri, Arial, sans-serif; fill: #111827; }
+      .small { font: 18px Calibri, Arial, sans-serif; fill: #111827; }
+      .box { stroke: #9ca3af; stroke-width: 2; }
+      .user { fill: #f3f4f6; }
+      .web { fill: #e0f2fe; }
+      .api { fill: #dbeafe; }
+      .db { fill: #dcfce7; }
+      .ai { fill: #fef3c7; }
+      .ext { fill: #fff7ed; }
+      .sub { fill: #eef2ff; stroke: #9ca3af; stroke-width: 1; }
+      .out { fill: #f0fdf4; stroke: #9ca3af; stroke-width: 1; }
+      .arrow { stroke: #374151; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+    </style>
+  </defs>
+
+  <text x="700" y="52" text-anchor="middle" class="title">System Architecture</text>
+
+  <rect x="60" y="360" width="240" height="170" rx="26" class="box user"/>
+  <text x="180" y="430" text-anchor="middle" class="label">Business User</text>
+  <text x="180" y="462" text-anchor="middle" class="label">/ Marketer</text>
+
+  <rect x="410" y="260" width="350" height="360" rx="30" class="box web"/>
+  <text x="585" y="350" text-anchor="middle" class="label">Web Application</text>
+  <text x="585" y="382" text-anchor="middle" class="label">Next.js Frontend</text>
+
+  <rect x="890" y="200" width="330" height="480" rx="30" class="box api"/>
+  <text x="1055" y="290" text-anchor="middle" class="label">API Layer</text>
+  <text x="1055" y="322" text-anchor="middle" class="label">Server-side services</text>
+
+  <rect x="930" y="360" width="250" height="60" rx="18" class="sub"/>
+  <text x="1055" y="398" text-anchor="middle" class="small">Website Analysis</text>
+
+  <rect x="930" y="440" width="250" height="60" rx="18" class="sub"/>
+  <text x="1055" y="478" text-anchor="middle" class="small">Content Generation</text>
+
+  <rect x="930" y="520" width="250" height="60" rx="18" class="sub"/>
+  <text x="1055" y="558" text-anchor="middle" class="small">Campaign Automation</text>
+
+  <rect x="930" y="600" width="250" height="60" rx="18" class="sub"/>
+  <text x="1055" y="638" text-anchor="middle" class="small">Optimization &amp; Insights</text>
+
+  <rect x="1280" y="330" width="230" height="220" rx="28" class="box db"/>
+  <text x="1395" y="410" text-anchor="middle" class="label">Database</text>
+  <text x="1395" y="442" text-anchor="middle" class="label">SQLite / Prisma</text>
+
+  <rect x="520" y="72" width="610" height="128" rx="28" class="box ai"/>
+  <text x="825" y="126" text-anchor="middle" class="label">AI Engine</text>
+  <text x="825" y="158" text-anchor="middle" class="label">LLM + Agent Workflows</text>
+
+  <rect x="1220" y="72" width="300" height="128" rx="28" class="box ext"/>
+  <text x="1370" y="126" text-anchor="middle" class="label">External Services</text>
+  <text x="1370" y="158" text-anchor="middle" class="label">SMTP / Search / AI Provider</text>
+
+  <rect x="520" y="680" width="340" height="100" rx="18" class="out"/>
+  <text x="690" y="725" text-anchor="middle" class="small">Reports &amp; Recommendations</text>
+
+  <rect x="890" y="720" width="330" height="100" rx="18" class="out"/>
+  <text x="1055" y="775" text-anchor="middle" class="small">Personalized Marketing Assets</text>
+
+  <rect x="1220" y="720" width="300" height="100" rx="18" class="out"/>
+  <text x="1370" y="775" text-anchor="middle" class="small">Email / Social / SEO Outputs</text>
+
+  <rect x="720" y="820" width="360" height="70" rx="18" class="out"/>
+  <text x="900" y="862" text-anchor="middle" class="small">Performance Analytics</text>
+
+  <line x1="300" y1="445" x2="410" y2="445" class="arrow"/>
+  <line x1="760" y1="445" x2="890" y2="445" class="arrow"/>
+  <line x1="1220" y1="440" x2="1280" y2="440" class="arrow"/>
+  <line x1="1130" y1="130" x2="1220" y2="130" class="arrow"/>
+  <line x1="890" y1="130" x2="760" y2="130" class="arrow"/>
+  <line x1="1055" y1="680" x2="1055" y2="720" class="arrow"/>
+  <line x1="860" y1="750" x2="890" y2="750" class="arrow"/>
+  <line x1="1220" y1="750" x2="1370" y2="750" class="arrow"/>
+  <line x1="890" y1="580" x2="780" y2="680" class="arrow"/>
+  <line x1="1040" y1="580" x2="1040" y2="720" class="arrow"/>
+  <line x1="1150" y1="580" x2="1330" y2="720" class="arrow"/>
+  <line x1="1370" y1="200" x2="1370" y2="250" class="arrow"/>
+
+  <text x="700" y="874" text-anchor="middle" class="small">Figure 1: System Architecture</text>
+</svg>

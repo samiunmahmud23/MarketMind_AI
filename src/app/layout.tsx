@@ -28,26 +28,26 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "MarketMind AI — AI-Driven Marketing Agency",
+  title: "MarketMind AI - Marketing Operations Platform",
   description:
-    "MarketMind AI is an AI-driven marketing agency SaaS. Analyze any website, run SEO-based cold email campaigns, generate SEO reports, copywriting, and content strategy — powered by an autonomous multi-agent system.",
+    "A marketing operations SaaS. Analyze websites, run SEO-based cold email campaigns, generate SEO reports, copywriting, and content strategy with a unified marketing platform.",
   keywords: [
-    "AI marketing",
-    "marketing agency",
+    "marketing operations",
+    "marketing automation",
     "SEO",
     "cold email",
     "copywriting",
     "content strategy",
-    "MarketMind AI",
+    "marketing platform",
   ],
   authors: [{ name: "MarketMind AI" }],
   icons: {
     icon: "/brand-logo-tiny.png",
   },
   openGraph: {
-    title: "MarketMind AI — AI-Driven Marketing Agency",
+    title: "MarketMind AI - Marketing Operations Platform",
     description:
-      "Analyze websites, run cold email campaigns, generate SEO reports, copywriting and content strategy with an autonomous AI agent system.",
+      "Analyze websites, run cold email campaigns, generate SEO reports, copywriting and content strategy with an autonomous marketing system.",
     siteName: "MarketMind AI",
     type: "website",
   },

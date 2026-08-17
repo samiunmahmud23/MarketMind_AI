@@ -31,7 +31,7 @@ const STEPS = [
   "Composing full analysis report",
 ];
 
-export function WebsiteAnalysisSection() {
+export function WebsiteAnalysisSection({ itemId }: { itemId?: string | null }) {
   const [url, setUrl] = React.useState("");
   const [busy, setBusy] = React.useState(false);
   const [stepIdx, setStepIdx] = React.useState(0);
@@ -55,6 +55,14 @@ export function WebsiteAnalysisSection() {
     loadHistory();
   }, [loadHistory]);
 
+  // Auto-open specific item when navigated from global search
+  React.useEffect(() => {
+    if (itemId) {
+      viewHistory(itemId);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [itemId]);
+
   React.useEffect(() => {
     if (!busy) return;
     setStepIdx(0);
@@ -69,6 +77,12 @@ export function WebsiteAnalysisSection() {
     const u = (targetUrl || url).trim();
     if (!u) {
       toast.error("Enter a website URL");
+      return;
+    }
+    try {
+      new URL(u.startsWith('http') ? u : `https://${u}`);
+    } catch {
+      toast.error("Please enter a valid URL (e.g., https://example.com)");
       return;
     }
     setBusy(true);
@@ -162,7 +176,7 @@ export function WebsiteAnalysisSection() {
           <CardContent className="p-6">
             <div className="flex items-center gap-2 mb-4">
               <Loader2 className="h-4 w-4 animate-spin text-primary" />
-              <span className="text-sm font-medium">WebsiteAnalyst agent is working…</span>
+              <span className="text-sm font-medium">Website analysis is running…</span>
             </div>
             <div className="space-y-2.5">
               {STEPS.map((s, i) => (
@@ -286,7 +300,7 @@ export function WebsiteAnalysisSection() {
             {loadingHistory
               ? Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-14 w-full" />)
               : history.map((h) => (
-                  <div key={h.id} className="flex items-center gap-3 rounded-lg border border-border p-3">
+                  <div key={h.id} className="flex items-center gap-3 rounded-lg border border-border p-3 transition-colors hover:bg-muted/50 group">
                     <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600 shrink-0">
                       <Globe className="h-4 w-4" />
                     </div>
@@ -320,7 +334,7 @@ function SwotCard({ icon: Icon, title, items, color }: { icon: any; title: strin
     sky: "text-sky-600 bg-sky-500/10",
   };
   return (
-    <Card>
+    <Card className="transition-all hover:-translate-y-1 hover:shadow-md">
       <CardHeader className="pb-2">
         <CardTitle className="text-xs flex items-center gap-2 font-semibold uppercase tracking-wide">
           <span className={`inline-flex h-6 w-6 items-center justify-center rounded-md ${colorMap[color]}`}>
