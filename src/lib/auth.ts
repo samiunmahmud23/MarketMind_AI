@@ -91,14 +91,14 @@ export const authOptions: NextAuthOptions = {
       }
       return true;
     },
-    async jwt({ token, user, account }) {
+    async jwt({ token, user, account, trigger }) {
       // Credentials sign-in provides our fields directly.
       if (user) {
         token.id = (user as any).id;
         token.role = (user as any).role;
       }
       // OAuth (or refresh): resolve our DB user by email for id/role/tier.
-      if ((account || !token.role) && token.email) {
+      if ((account || !token.role || trigger === "update") && token.email) {
         const dbUser = await db.user.findUnique({
           where: { email: (token.email as string).toLowerCase() },
         });

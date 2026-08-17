@@ -17,6 +17,7 @@ import { MarketingSkillsSection } from "@/components/sections/marketing-skills";
 import { ProductStudioSection } from "@/components/sections/product-studio";
 import { AccountSection } from "@/components/sections/account";
 import { SettingsSection } from "@/components/sections/settings";
+import { AdminSection } from "@/components/sections/admin";
 import { WelcomeOverlay } from "@/components/welcome-overlay";
 
 // Cinematic easing (expo-out) — feels instantaneous on entry, fluid on exit.
@@ -26,7 +27,7 @@ export default function Page() {
   const [entered, setEntered] = React.useState(false);
   const [section, setSection] = React.useState<SectionId>("dashboard");
   const [itemId, setItemId] = React.useState<string | null>(null);
-  const { status } = useSession();
+  const { data: session, status } = useSession();
 
   // A real NextAuth session (e.g. after Google login) enters the app directly.
   React.useEffect(() => {
@@ -92,7 +93,12 @@ export default function Page() {
       animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
       transition={{ duration: 0.55, ease: CINEMATIC }}
     >
-      <AppShell active={section} onNavigate={navigate} onLogout={logout}>
+      <AppShell 
+        active={section} 
+        onNavigate={navigate} 
+        onLogout={logout} 
+        isAdmin={(session?.user as any)?.role === "admin"}
+      >
         <WelcomeOverlay onNavigate={(s) => navigate(s as SectionId)} />
         {/* Key-based entrance (no AnimatePresence exit dependency) — the new
             section mounts and springs in instantly; only one is ever mounted. */}
@@ -111,9 +117,10 @@ export default function Page() {
           {section === "product-studio" && <ProductStudioSection />}
           {section === "social" && <SocialSection itemId={itemId} />}
           {section === "repurpose" && <RepurposeSection itemId={itemId} />}
-          {section === "marketing-skills" && <MarketingSkillsSection itemId={itemId} />}
+          {section === "marketing-skills" && <MarketingSkillsSection />}
           {section === "account" && <AccountSection />}
           {section === "settings" && <SettingsSection />}
+          {section === "admin" && <AdminSection />}
         </motion.div>
       </AppShell>
     </motion.div>

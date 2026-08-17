@@ -22,6 +22,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { useSession } from "next-auth/react";
 import { GlassCard, EmptyState } from "@/components/shared";
 import { apiFetch, ApiError } from "@/lib/api-fetch";
 import { cn } from "@/lib/utils";
@@ -142,6 +143,7 @@ function BillingTab() {
   const [currentTier, setCurrentTier] = React.useState("pro");
   const [subscribing, setSubscribing] = React.useState<string | null>(null);
   const [demoMode, setDemoMode] = React.useState(true);
+  const { update } = useSession();
 
   React.useEffect(() => {
     (async () => {
@@ -173,10 +175,10 @@ function BillingTab() {
         // Stripe not configured → fall through to the demo flow; otherwise surface it.
         if (!/not configured/i.test(e?.message || "")) throw e;
       }
-      // Stripe not configured or checkout unavailable → demo tier update.
       const data = await apiFetch<any>("/api/billing/subscribe", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ tier: tierId }) });
       toast.success(data.message);
       setCurrentTier(tierId);
+      await update();
     } catch (e: any) { toast.error(e.message); }
     finally { setSubscribing(null); }
   }
@@ -186,7 +188,10 @@ function BillingTab() {
     if (typeof window === "undefined") return;
     const p = new URLSearchParams(window.location.search);
     const b = p.get("billing");
-    if (b === "success") toast.success("Payment successful — your plan is being activated.");
+    if (b === "success") {
+      toast.success("Payment successful — your plan is being activated.");
+      update();
+    }
     else if (b === "cancel") toast.info("Checkout canceled — no charge was made.");
     if (b) window.history.replaceState({}, "", window.location.pathname);
   }, []);

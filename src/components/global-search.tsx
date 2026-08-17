@@ -101,7 +101,7 @@ export function GlobalSearch({
     return [
       {
         label: "Website Analyses",
-        section: "analysis",
+        section: "analysis" as SectionId,
         icon: Globe,
         color: "text-emerald-600 bg-emerald-500/10",
         items: results.analyses.map((a) => ({
@@ -112,7 +112,7 @@ export function GlobalSearch({
       },
       {
         label: "Email Campaigns",
-        section: "campaigns",
+        section: "campaigns" as SectionId,
         icon: Mail,
         color: "text-amber-600 bg-amber-500/10",
         items: results.campaigns.map((c) => ({
@@ -123,7 +123,7 @@ export function GlobalSearch({
       },
       {
         label: "SEO Reports",
-        section: "seo",
+        section: "seo" as SectionId,
         icon: SeoIcon,
         color: "text-sky-600 bg-sky-500/10",
         items: results.seoReports.map((s) => ({
@@ -134,7 +134,7 @@ export function GlobalSearch({
       },
       {
         label: "Copy Assets",
-        section: "copywriting",
+        section: "copywriting" as SectionId,
         icon: PenTool,
         color: "text-rose-600 bg-rose-500/10",
         items: results.copyAssets.map((c) => ({

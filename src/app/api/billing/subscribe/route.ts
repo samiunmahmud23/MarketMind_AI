@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { resolveTenantId } from "@/lib/tenant";
 import { rateLimit } from "@/lib/rate-limit";
+import { getSmtpConfig, sendCampaignEmail } from "@/lib/email";
 
 export const runtime = "nodejs";
 
@@ -48,6 +49,19 @@ export async function POST(req: NextRequest) {
         aiCallsUsed: 0,
       },
     });
+
+    // Notify admins
+    const smtp = await getSmtpConfig();
+    if (smtp) {
+      const admins = await db.user.findMany({ where: { role: "admin" } });
+      for (const admin of admins) {
+        await sendCampaignEmail(smtp, {
+          to: admin.email,
+          subject: `New Subscription: ${user.email} upgraded to ${tier}`,
+          text: `User ${user.email} (Demo mode) has upgraded to the ${tier} tier.\n\nLog in to your Admin Panel to view details.`,
+        });
+      }
+    }
 
     return NextResponse.json({
       ok: true,

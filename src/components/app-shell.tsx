@@ -20,6 +20,7 @@ import {
   LogOut,
   Moon,
   Sun,
+  Lock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { checkServerHealth } from "@/lib/api-fetch";
@@ -41,7 +42,8 @@ export type SectionId =
   | "repurpose"
   | "marketing-skills"
   | "account"
-  | "settings";
+  | "settings"
+  | "admin";
 
 const NAV: {
   id: SectionId;
@@ -323,6 +325,10 @@ function MobileDrawer({
 
   if (!mounted) return null;
 
+  const activeNav = active === "admin" && !NAV.some(n => n.id === "admin") 
+    ? [...NAV, { id: "admin" as SectionId, label: "Admin Panel", icon: Lock, desc: "Platform management" }]
+    : NAV;
+
   return (
     <div className="fixed inset-0 z-[60] md:hidden" style={{ pointerEvents: shown ? "auto" : "none" }}>
       <div
@@ -350,7 +356,7 @@ function MobileDrawer({
               </button>
             </div>
             <nav className="scroll-thin flex-1 space-y-0.5 overflow-y-auto px-3 py-2">
-              {NAV.map((item) => {
+              {activeNav.map((item) => {
                 const Icon = item.icon;
                 const isActive = item.id === active;
                 return (
@@ -398,13 +404,22 @@ export function AppShell({
   onNavigate,
   children,
   onLogout,
+  isAdmin,
 }: {
   active: SectionId;
   onNavigate: (id: SectionId, itemId?: string) => void;
   children: React.ReactNode;
   onLogout?: () => void;
+  isAdmin?: boolean;
 }) {
-  const current = NAV.find((n) => n.id === active)!;
+  const activeNav = React.useMemo(() => {
+    if (isAdmin) {
+      return [...NAV, { id: "admin" as SectionId, label: "Admin Panel", icon: Lock, desc: "Platform management" }];
+    }
+    return NAV;
+  }, [isAdmin]);
+
+  const current = activeNav.find((n) => n.id === active)!;
   const [searchOpen, setSearchOpen] = React.useState(false);
   const [mobileNavOpen, setMobileNavOpen] = React.useState(false);
   
@@ -448,7 +463,7 @@ export function AppShell({
             animate="show"
             className="scroll-thin flex-1 space-y-0.5 overflow-y-auto px-3 py-3"
           >
-            {NAV.map((item) => (
+            {activeNav.map((item) => (
               <motion.div key={item.id} variants={navItemVariant}>
                 <MagneticNavItem item={item} isActive={item.id === active} onNavigate={navigate} />
               </motion.div>
